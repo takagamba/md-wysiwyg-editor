@@ -17,7 +17,7 @@ const adapter: EditorAdapter = {
         // lute / i18n / KaTeX / Mermaid 等を拡張に同梱したコピーから読み込む（オフラインで動作）
         cdn: options.vditorCdn,
         lang: 'ja_JP',
-        mode: options.vditorMode ?? 'ir',
+        mode: options.vditorMode,
         value: options.text,
         height: '100%',
         theme: dark ? 'dark' : 'classic',
@@ -52,6 +52,10 @@ const adapter: EditorAdapter = {
   update(markdown) {
     vditor.setValue(markdown, true);
     suppressed = vditor.getValue();
+  },
+
+  getValue() {
+    return vditor.getValue();
   },
 
   setReadOnly(readOnly) {

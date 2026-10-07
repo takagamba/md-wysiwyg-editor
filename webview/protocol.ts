@@ -1,13 +1,13 @@
 // 拡張ホスト ⇔ Webview 間のメッセージ定義（両側から import する）
 
-export type Engine = 'milkdown' | 'vditor';
-
 export interface InitOptions {
   text: string;
   readOnly: boolean;
-  /** Vditor 専用: 同梱アセットのベース URL */
-  vditorCdn?: string;
-  vditorMode?: 'ir' | 'wysiwyg' | 'sv';
+  /** 同梱した Vditor アセットのベース URL */
+  vditorCdn: string;
+  vditorMode: 'ir' | 'wysiwyg' | 'sv';
+  /** 編集していない部分を元の書き方のまま保存する */
+  preserveFormatting: boolean;
 }
 
 export type HostToWebview =

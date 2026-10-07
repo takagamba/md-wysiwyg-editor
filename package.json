@@ -1,6 +1,6 @@
 {
   "name": "md-wysiwyg-editor",
-  "displayName": "Markdown WYSIWYG Editor (Milkdown / Vditor)",
+  "displayName": "Markdown WYSIWYG Editor (Vditor)",
   "description": "Markdown をレンダリング表示のまま同じタブで編集。閲覧モードと PDF 出力に対応。",
   "version": "0.1.0",
   "publisher": "local",
@@ -16,21 +16,8 @@
   "contributes": {
     "customEditors": [
       {
-        "viewType": "mdWysiwyg.milkdown",
-        "displayName": "Markdown WYSIWYG (Milkdown)",
-        "selector": [
-          {
-            "filenamePattern": "*.md"
-          },
-          {
-            "filenamePattern": "*.markdown"
-          }
-        ],
-        "priority": "option"
-      },
-      {
         "viewType": "mdWysiwyg.vditor",
-        "displayName": "Markdown WYSIWYG (Vditor)",
+        "displayName": "Markdown WYSIWYG",
         "selector": [
           {
             "filenamePattern": "*.md"
@@ -67,14 +54,8 @@
         "icon": "$(file-pdf)"
       },
       {
-        "command": "mdWysiwyg.openWithMilkdown",
-        "title": "Milkdown で開く",
-        "category": "Markdown WYSIWYG",
-        "icon": "$(preview)"
-      },
-      {
-        "command": "mdWysiwyg.openWithVditor",
-        "title": "Vditor で開く",
+        "command": "mdWysiwyg.openWysiwyg",
+        "title": "WYSIWYG で開く",
         "category": "Markdown WYSIWYG",
         "icon": "$(preview)"
       },
@@ -113,41 +94,21 @@
           "group": "navigation@3"
         },
         {
-          "command": "mdWysiwyg.openWithMilkdown",
+          "command": "mdWysiwyg.openWysiwyg",
           "when": "editorLangId == markdown && !activeCustomEditorId",
           "group": "navigation@3"
-        },
-        {
-          "command": "mdWysiwyg.openWithVditor",
-          "when": "editorLangId == markdown && !activeCustomEditorId",
-          "group": "navigation@4"
-        },
-        {
-          "command": "mdWysiwyg.openWithMilkdown",
-          "when": "activeCustomEditorId == mdWysiwyg.vditor",
-          "group": "1_open"
-        },
-        {
-          "command": "mdWysiwyg.openWithVditor",
-          "when": "activeCustomEditorId == mdWysiwyg.milkdown",
-          "group": "1_open"
         }
       ],
       "explorer/context": [
         {
-          "command": "mdWysiwyg.openWithMilkdown",
+          "command": "mdWysiwyg.openWysiwyg",
           "when": "resourceExtname =~ /^\\.(md|markdown)$/",
           "group": "navigation@50"
         },
         {
-          "command": "mdWysiwyg.openWithVditor",
-          "when": "resourceExtname =~ /^\\.(md|markdown)$/",
-          "group": "navigation@51"
-        },
-        {
           "command": "mdWysiwyg.exportPdf",
           "when": "resourceExtname =~ /^\\.(md|markdown)$/",
-          "group": "navigation@52"
+          "group": "navigation@51"
         }
       ],
       "commandPalette": [
@@ -200,6 +161,11 @@
           "default": "ir",
           "description": "Vditor の編集モード。"
         },
+        "mdWysiwyg.preserveFormatting": {
+          "type": "boolean",
+          "default": true,
+          "description": "保存時、編集していない部分は元の書き方のまま残す。オフにすると Vditor が文書全体を書式を揃えて書き出す（`[x]` → `[X]`、表の列幅揃えなど）。"
+        },
         "mdWysiwyg.pdf.browserPath": {
           "type": "string",
           "default": "",
@@ -244,8 +210,6 @@
     "package": "npx @vscode/vsce package --no-dependencies --allow-missing-repository --skip-license"
   },
   "dependencies": {
-    "@milkdown/crepe": "^7.22.2",
-    "@milkdown/kit": "^7.22.2",
     "highlight.js": "^11.12.0",
     "markdown-it": "^15.0.2",
     "puppeteer-core": "^25.12.0",

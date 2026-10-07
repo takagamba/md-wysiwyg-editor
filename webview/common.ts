@@ -1,4 +1,5 @@
 import type { HostToWebview, InitOptions, WebviewToHost } from './protocol';
+import { FormatRestorer } from './restoreFormat';
 
 declare function acquireVsCodeApi(): { postMessage(message: unknown): void };
 
@@ -6,11 +7,13 @@ const vscodeApi = acquireVsCodeApi();
 
 export const post = (message: WebviewToHost) => vscodeApi.postMessage(message);
 
-/** 各エディタ実装（Milkdown / Vditor）が満たすインターフェース */
+/** エディタ実装が満たすインターフェース（現在は Vditor のみ） */
 export interface EditorAdapter {
   init(root: HTMLElement, options: InitOptions, emitEdit: (markdown: string) => void): Promise<void>;
   /** 外部（テキストエディタ・Git 等）での変更を反映する */
   update(markdown: string): void;
+  /** エディタが現在の内容を書き出した Markdown */
+  getValue(): string;
   setReadOnly(readOnly: boolean): void;
 }
 
@@ -21,11 +24,17 @@ export function bootstrap(adapter: EditorAdapter): void {
   const badge = document.getElementById('readonly-badge')!;
   let readOnly = false;
   let initialized: Promise<void> | undefined;
+  // 読み込んだ文書と、それをエディタが書き出した結果の組。編集していない部分を元の書き方に戻すのに使う
+  let restorer: FormatRestorer | undefined;
+  let preserveFormatting = true;
+  const resetBase = (original: string) => {
+    restorer = preserveFormatting ? new FormatRestorer(original, adapter.getValue()) : undefined;
+  };
 
   let timer: number | undefined;
   let pending: string | undefined;
   const flush = () => {
-    if (pending !== undefined) post({ type: 'edit', text: pending });
+    if (pending !== undefined) post({ type: 'edit', text: restorer ? restorer.restore(pending) : pending });
     pending = undefined;
     timer = undefined;
   };
@@ -50,8 +59,10 @@ export function bootstrap(adapter: EditorAdapter): void {
     try {
       if (message.type === 'init') {
         readOnly = message.options.readOnly;
+        preserveFormatting = message.options.preserveFormatting;
         initialized = adapter.init(root, message.options, emitEdit);
         await initialized;
+        resetBase(message.options.text);
         applyReadOnly(message.options.readOnly);
         return;
       }
@@ -62,6 +73,7 @@ export function bootstrap(adapter: EditorAdapter): void {
           clearTimeout(timer);
           pending = undefined;
           adapter.update(message.text);
+          resetBase(message.text);
           break;
         case 'setReadOnly':
           flush();

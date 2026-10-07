@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
-import { EditorSession, MarkdownEditorProvider, VIEW_TYPES } from './markdownEditorProvider';
+import { EditorSession, MarkdownEditorProvider, VIEW_TYPE } from './markdownEditorProvider';
 import { exportPdf } from './pdfExport';
-import type { Engine } from '../webview/protocol';
 
 export function activate(context: vscode.ExtensionContext): void {
   const setReadOnly = (value: boolean | 'toggle') => {
@@ -10,22 +9,20 @@ export function activate(context: vscode.ExtensionContext): void {
     session.setReadOnly(value === 'toggle' ? !session.isReadOnly : value);
   };
 
-  const openWith = (engine: Engine | 'default') => async (uri?: vscode.Uri) => {
+  const openWith = (viewType: string) => async (uri?: vscode.Uri) => {
     const target = uri ?? activeMarkdownUri();
     if (!target) return;
-    await vscode.commands.executeCommand('vscode.openWith', target, engine === 'default' ? 'default' : VIEW_TYPES[engine]);
+    await vscode.commands.executeCommand('vscode.openWith', target, viewType);
   };
 
   context.subscriptions.push(
-    MarkdownEditorProvider.register(context, 'milkdown'),
-    MarkdownEditorProvider.register(context, 'vditor'),
+    MarkdownEditorProvider.register(context),
 
     vscode.commands.registerCommand('mdWysiwyg.enterReadOnly', () => setReadOnly(true)),
     vscode.commands.registerCommand('mdWysiwyg.exitReadOnly', () => setReadOnly(false)),
     vscode.commands.registerCommand('mdWysiwyg.toggleReadOnly', () => setReadOnly('toggle')),
 
-    vscode.commands.registerCommand('mdWysiwyg.openWithMilkdown', openWith('milkdown')),
-    vscode.commands.registerCommand('mdWysiwyg.openWithVditor', openWith('vditor')),
+    vscode.commands.registerCommand('mdWysiwyg.openWysiwyg', openWith(VIEW_TYPE)),
     vscode.commands.registerCommand('mdWysiwyg.openAsText', openWith('default')),
 
     vscode.commands.registerCommand('mdWysiwyg.exportPdf', async (uri?: vscode.Uri) => {
@@ -45,8 +42,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     vscode.commands.registerCommand('mdWysiwyg.setDefaultEditor', async () => {
       const items = [
-        { label: 'Milkdown', viewType: VIEW_TYPES.milkdown },
-        { label: 'Vditor', viewType: VIEW_TYPES.vditor },
+        { label: 'WYSIWYG エディタ', viewType: VIEW_TYPE },
         { label: 'テキストエディタ（VS Code 標準）', viewType: 'default' },
       ];
       const pick = await vscode.window.showQuickPick(items, { placeHolder: '*.md / *.markdown を開くエディタ' });

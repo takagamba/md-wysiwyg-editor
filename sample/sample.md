@@ -1,6 +1,6 @@
 # Markdown WYSIWYG サンプル
 
-このファイルは **Milkdown** と **Vditor** の比較用です。*斜体*、~~取り消し線~~、`インラインコード`、[外部リンク](https://code.visualstudio.com/) と [相対リンク](./other.md)。
+このファイルは **Markdown WYSIWYG** の動作確認用です。*斜体*、~~取り消し線~~、`インラインコード`、[外部リンク](https://code.visualstudio.com/) と [相対リンク](./other.md)。
 
 ## リスト
 
@@ -17,10 +17,10 @@
 
 ## 表
 
-| 項目 | Milkdown | Vditor |
+| 項目 | 内容 | 備考 |
 | --- | --- | --- |
-| 編集スタイル | Notion 風 | Typora 風 |
-| 数式 | ○ | ○ |
+| 編集スタイル | Typora 風 | カーソル位置だけ記法を表示 |
+| 数式 | KaTeX | インライン / ブロック |
 
 ## コード
 

@@ -22,10 +22,7 @@ const extensionConfig = {
 
 /** @type {import('esbuild').BuildOptions} */
 const webviewConfig = {
-  entryPoints: {
-    milkdown: 'webview/milkdown.ts',
-    vditor: 'webview/vditor.ts',
-  },
+  entryPoints: { vditor: 'webview/vditor.ts' },
   bundle: true,
   platform: 'browser',
   format: 'iife',

@@ -1,10 +1,7 @@
 import * as vscode from 'vscode';
-import type { Engine, HostToWebview, WebviewToHost } from '../webview/protocol';
+import type { HostToWebview, WebviewToHost } from '../webview/protocol';
 
-export const VIEW_TYPES: Record<Engine, string> = {
-  milkdown: 'mdWysiwyg.milkdown',
-  vditor: 'mdWysiwyg.vditor',
-};
+export const VIEW_TYPE = 'mdWysiwyg.vditor';
 
 const READONLY_CONTEXT_KEY = 'mdWysiwyg.readOnly';
 
@@ -38,7 +35,6 @@ export class EditorSession implements vscode.Disposable {
 
   constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly engine: Engine,
     readonly document: vscode.TextDocument,
     private readonly panel: vscode.WebviewPanel,
   ) {
@@ -111,6 +107,7 @@ export class EditorSession implements vscode.Disposable {
               .asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'out', 'vditor'))
               .toString(),
             vditorMode: config.get('vditor.mode', 'ir'),
+            preserveFormatting: config.get('preserveFormatting', true),
           },
         });
         break;
@@ -125,7 +122,7 @@ export class EditorSession implements vscode.Disposable {
         void this.openLink(m.href);
         break;
       case 'error':
-        void vscode.window.showErrorMessage(`Markdown WYSIWYG (${this.engine}): ${m.message}`);
+        void vscode.window.showErrorMessage(`Markdown WYSIWYG: ${m.message}`);
         break;
     }
   }
@@ -192,19 +189,15 @@ export class EditorSession implements vscode.Disposable {
   <meta http-equiv="Content-Security-Policy" content="${csp}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <base href="${baseHref}">
-  <link rel="stylesheet" href="${out('webview', `${this.engine}.css`)}">
+  <link rel="stylesheet" href="${out('webview', 'vditor.css')}">
 </head>
-<body class="engine-${this.engine}">
+<body>
   <div id="readonly-badge" hidden>閲覧モード</div>
   <div id="editor"></div>
-  ${
-    this.engine === 'vditor'
-      ? // Vditor はアイコンを同期 XHR + インライン script で読み込み CSP に弾かれるため、
-        // 同じ id で先に読み込んでおく（id が既にあれば Vditor は読み込みをスキップする）
-        `<script nonce="${nonce}" id="vditorIconScript" src="${out('vditor', 'dist', 'js', 'icons', 'ant.js')}"></script>`
-      : ''
-  }
-  <script nonce="${nonce}" src="${out('webview', `${this.engine}.js`)}"></script>
+  <!-- Vditor はアイコンを同期 XHR + インライン script で読み込み CSP に弾かれるため、
+       同じ id で先に読み込んでおく（id が既にあれば Vditor は読み込みをスキップする） -->
+  <script nonce="${nonce}" id="vditorIconScript" src="${out('vditor', 'dist', 'js', 'icons', 'ant.js')}"></script>
+  <script nonce="${nonce}" src="${out('webview', 'vditor.js')}"></script>
 </body>
 </html>`;
   }
@@ -220,21 +213,18 @@ export class EditorSession implements vscode.Disposable {
 }
 
 export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
-  static register(context: vscode.ExtensionContext, engine: Engine): vscode.Disposable {
-    return vscode.window.registerCustomEditorProvider(VIEW_TYPES[engine], new MarkdownEditorProvider(context, engine), {
+  static register(context: vscode.ExtensionContext): vscode.Disposable {
+    return vscode.window.registerCustomEditorProvider(VIEW_TYPE, new MarkdownEditorProvider(context), {
       // 非表示タブの状態を保持（切り替えのたびに再初期化しない）
       webviewOptions: { retainContextWhenHidden: true },
       supportsMultipleEditorsPerDocument: true,
     });
   }
 
-  private constructor(
-    private readonly context: vscode.ExtensionContext,
-    private readonly engine: Engine,
-  ) {}
+  private constructor(private readonly context: vscode.ExtensionContext) {}
 
   resolveCustomTextEditor(document: vscode.TextDocument, panel: vscode.WebviewPanel): void {
-    new EditorSession(this.context, this.engine, document, panel);
+    new EditorSession(this.context, document, panel);
   }
 }
 

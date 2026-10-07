@@ -1,0 +1,26 @@
+/* Vditor の枠・ツールバーの配色を VS Code のテーマ変数に合わせる */
+body .vditor,
+body .vditor--dark {
+  --border-color: var(--vscode-panel-border, transparent);
+  --panel-background-color: var(--vscode-editorWidget-background);
+  --toolbar-background-color: var(--vscode-editor-background);
+  --toolbar-icon-color: var(--vscode-icon-foreground);
+  --toolbar-icon-hover-color: var(--vscode-textLink-foreground);
+  --textarea-background-color: var(--vscode-editor-background);
+  --textarea-text-color: var(--vscode-editor-foreground);
+  border: none;
+}
+
+body .vditor .vditor-reset {
+  font-family: var(--vscode-font-family), sans-serif;
+  color: var(--vscode-editor-foreground);
+}
+
+body .vditor .vditor-toolbar {
+  border-bottom: 1px solid var(--vscode-panel-border, transparent);
+}
+
+/* 閲覧モードではツールバーを隠す */
+body.is-readonly .vditor .vditor-toolbar {
+  display: none;
+}

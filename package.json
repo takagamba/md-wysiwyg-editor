@@ -1,0 +1,260 @@
+{
+  "name": "md-wysiwyg-editor",
+  "displayName": "Markdown WYSIWYG Editor (Milkdown / Vditor)",
+  "description": "Markdown をレンダリング表示のまま同じタブで編集。閲覧モードと PDF 出力に対応。",
+  "version": "0.1.0",
+  "publisher": "local",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "mdWysiwyg.milkdown",
+        "displayName": "Markdown WYSIWYG (Milkdown)",
+        "selector": [
+          {
+            "filenamePattern": "*.md"
+          },
+          {
+            "filenamePattern": "*.markdown"
+          }
+        ],
+        "priority": "option"
+      },
+      {
+        "viewType": "mdWysiwyg.vditor",
+        "displayName": "Markdown WYSIWYG (Vditor)",
+        "selector": [
+          {
+            "filenamePattern": "*.md"
+          },
+          {
+            "filenamePattern": "*.markdown"
+          }
+        ],
+        "priority": "option"
+      }
+    ],
+    "commands": [
+      {
+        "command": "mdWysiwyg.enterReadOnly",
+        "title": "閲覧モードにする",
+        "category": "Markdown WYSIWYG",
+        "icon": "$(lock)"
+      },
+      {
+        "command": "mdWysiwyg.exitReadOnly",
+        "title": "編集モードにする",
+        "category": "Markdown WYSIWYG",
+        "icon": "$(unlock)"
+      },
+      {
+        "command": "mdWysiwyg.toggleReadOnly",
+        "title": "閲覧 / 編集モードを切り替え",
+        "category": "Markdown WYSIWYG"
+      },
+      {
+        "command": "mdWysiwyg.exportPdf",
+        "title": "PDF に出力",
+        "category": "Markdown WYSIWYG",
+        "icon": "$(file-pdf)"
+      },
+      {
+        "command": "mdWysiwyg.openWithMilkdown",
+        "title": "Milkdown で開く",
+        "category": "Markdown WYSIWYG",
+        "icon": "$(preview)"
+      },
+      {
+        "command": "mdWysiwyg.openWithVditor",
+        "title": "Vditor で開く",
+        "category": "Markdown WYSIWYG",
+        "icon": "$(preview)"
+      },
+      {
+        "command": "mdWysiwyg.openAsText",
+        "title": "テキストエディタで開く",
+        "category": "Markdown WYSIWYG",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "mdWysiwyg.setDefaultEditor",
+        "title": "*.md を開く既定のエディタを設定",
+        "category": "Markdown WYSIWYG"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "mdWysiwyg.enterReadOnly",
+          "when": "activeCustomEditorId =~ /^mdWysiwyg\\./ && !mdWysiwyg.readOnly",
+          "group": "navigation@1"
+        },
+        {
+          "command": "mdWysiwyg.exitReadOnly",
+          "when": "activeCustomEditorId =~ /^mdWysiwyg\\./ && mdWysiwyg.readOnly",
+          "group": "navigation@1"
+        },
+        {
+          "command": "mdWysiwyg.exportPdf",
+          "when": "activeCustomEditorId =~ /^mdWysiwyg\\./ || editorLangId == markdown",
+          "group": "navigation@2"
+        },
+        {
+          "command": "mdWysiwyg.openAsText",
+          "when": "activeCustomEditorId =~ /^mdWysiwyg\\./",
+          "group": "navigation@3"
+        },
+        {
+          "command": "mdWysiwyg.openWithMilkdown",
+          "when": "editorLangId == markdown && !activeCustomEditorId",
+          "group": "navigation@3"
+        },
+        {
+          "command": "mdWysiwyg.openWithVditor",
+          "when": "editorLangId == markdown && !activeCustomEditorId",
+          "group": "navigation@4"
+        },
+        {
+          "command": "mdWysiwyg.openWithMilkdown",
+          "when": "activeCustomEditorId == mdWysiwyg.vditor",
+          "group": "1_open"
+        },
+        {
+          "command": "mdWysiwyg.openWithVditor",
+          "when": "activeCustomEditorId == mdWysiwyg.milkdown",
+          "group": "1_open"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "mdWysiwyg.openWithMilkdown",
+          "when": "resourceExtname =~ /^\\.(md|markdown)$/",
+          "group": "navigation@50"
+        },
+        {
+          "command": "mdWysiwyg.openWithVditor",
+          "when": "resourceExtname =~ /^\\.(md|markdown)$/",
+          "group": "navigation@51"
+        },
+        {
+          "command": "mdWysiwyg.exportPdf",
+          "when": "resourceExtname =~ /^\\.(md|markdown)$/",
+          "group": "navigation@52"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "mdWysiwyg.enterReadOnly",
+          "when": "activeCustomEditorId =~ /^mdWysiwyg\\./ && !mdWysiwyg.readOnly"
+        },
+        {
+          "command": "mdWysiwyg.exitReadOnly",
+          "when": "activeCustomEditorId =~ /^mdWysiwyg\\./ && mdWysiwyg.readOnly"
+        },
+        {
+          "command": "mdWysiwyg.toggleReadOnly",
+          "when": "activeCustomEditorId =~ /^mdWysiwyg\\./"
+        },
+        {
+          "command": "mdWysiwyg.openAsText",
+          "when": "activeCustomEditorId =~ /^mdWysiwyg\\./"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "mdWysiwyg.toggleReadOnly",
+        "key": "ctrl+alt+r",
+        "mac": "cmd+alt+r",
+        "when": "activeCustomEditorId =~ /^mdWysiwyg\\./"
+      }
+    ],
+    "configuration": {
+      "title": "Markdown WYSIWYG",
+      "properties": {
+        "mdWysiwyg.readOnlyByDefault": {
+          "type": "boolean",
+          "default": false,
+          "description": "ファイルを開いたときに閲覧モード（読み取り専用）で表示する。"
+        },
+        "mdWysiwyg.vditor.mode": {
+          "type": "string",
+          "enum": [
+            "ir",
+            "wysiwyg",
+            "sv"
+          ],
+          "enumDescriptions": [
+            "即時レンダリング（Typora 風。カーソル位置だけ記法を表示）",
+            "完全 WYSIWYG",
+            "分割ビュー（ソース + プレビュー）"
+          ],
+          "default": "ir",
+          "description": "Vditor の編集モード。"
+        },
+        "mdWysiwyg.pdf.browserPath": {
+          "type": "string",
+          "default": "",
+          "description": "PDF 出力に使う Chrome / Edge の実行ファイルのパス。空なら自動検出。"
+        },
+        "mdWysiwyg.pdf.format": {
+          "type": "string",
+          "enum": [
+            "A4",
+            "A3",
+            "A5",
+            "B5",
+            "Letter",
+            "Legal"
+          ],
+          "default": "A4",
+          "description": "PDF の用紙サイズ。"
+        },
+        "mdWysiwyg.pdf.margin": {
+          "type": "string",
+          "default": "20mm",
+          "description": "PDF の余白（上下左右共通。例: 20mm, 1in）。"
+        },
+        "mdWysiwyg.pdf.pageNumbers": {
+          "type": "boolean",
+          "default": true,
+          "description": "PDF のフッターにページ番号を入れる。"
+        },
+        "mdWysiwyg.pdf.openAfterExport": {
+          "type": "boolean",
+          "default": true,
+          "description": "PDF 出力後にファイルを開く。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit -p .",
+    "vscode:prepublish": "node esbuild.mjs --production",
+    "package": "npx @vscode/vsce package --no-dependencies --allow-missing-repository --skip-license"
+  },
+  "dependencies": {
+    "@milkdown/crepe": "^7.22.2",
+    "@milkdown/kit": "^7.22.2",
+    "highlight.js": "^11.12.0",
+    "markdown-it": "^15.0.2",
+    "puppeteer-core": "^25.12.0",
+    "vditor": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/vscode": "1.90.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

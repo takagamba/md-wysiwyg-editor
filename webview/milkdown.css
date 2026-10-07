@@ -1,0 +1,47 @@
+/* Crepe（frame テーマ）の配色を VS Code のテーマ変数に合わせる */
+body .milkdown {
+  --crepe-color-background: var(--vscode-editor-background);
+  --crepe-color-on-background: var(--vscode-editor-foreground);
+  --crepe-color-surface: var(--vscode-editorWidget-background);
+  --crepe-color-surface-low: var(--vscode-textCodeBlock-background, var(--vscode-editorWidget-background));
+  --crepe-color-on-surface: var(--vscode-editor-foreground);
+  --crepe-color-on-surface-variant: var(--vscode-descriptionForeground);
+  --crepe-color-outline: var(--vscode-editorWidget-border, var(--vscode-panel-border));
+  --crepe-color-primary: var(--vscode-textLink-foreground);
+  --crepe-color-secondary: var(--vscode-editor-inactiveSelectionBackground);
+  --crepe-color-on-secondary: var(--vscode-editor-foreground);
+  --crepe-color-inverse: var(--vscode-editorHoverWidget-background);
+  --crepe-color-on-inverse: var(--vscode-editorHoverWidget-foreground);
+  --crepe-color-inline-code: var(--vscode-textPreformat-foreground);
+  --crepe-color-error: var(--vscode-errorForeground);
+  --crepe-color-hover: var(--vscode-list-hoverBackground);
+  --crepe-color-selected: var(--vscode-editor-selectionBackground);
+  --crepe-color-inline-area: var(--vscode-textCodeBlock-background);
+
+  --crepe-font-title: var(--vscode-font-family), sans-serif;
+  --crepe-font-default: var(--vscode-font-family), sans-serif;
+  --crepe-font-code: var(--vscode-editor-font-family), monospace;
+}
+
+body .milkdown {
+  min-height: 100%;
+}
+
+body .milkdown .ProseMirror {
+  padding: 40px 80px 120px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+@media (max-width: 700px) {
+  body .milkdown .ProseMirror {
+    padding: 24px 24px 80px;
+  }
+}
+
+/* 閲覧モードではブロック操作用のハンドル等を出さない */
+body.is-readonly .milkdown-block-handle,
+body.is-readonly .milkdown-slash-menu,
+body.is-readonly .milkdown-toolbar {
+  display: none !important;
+}

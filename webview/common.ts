@@ -24,17 +24,28 @@ export function bootstrap(adapter: EditorAdapter): void {
   const badge = document.getElementById('readonly-badge')!;
   let readOnly = false;
   let initialized: Promise<void> | undefined;
+  let ready = false;
   // 読み込んだ文書と、それをエディタが書き出した結果の組。編集していない部分を元の書き方に戻すのに使う
   let restorer: FormatRestorer | undefined;
   let preserveFormatting = true;
+  /** 読み込み直後にエディタが書き出した Markdown */
+  let baseValue = '';
+  /** 読み込み後に edit を送ったか */
+  let sentSinceBase = false;
   const resetBase = (original: string) => {
-    restorer = preserveFormatting ? new FormatRestorer(original, adapter.getValue()) : undefined;
+    baseValue = adapter.getValue();
+    sentSinceBase = false;
+    restorer = preserveFormatting ? new FormatRestorer(original, baseValue) : undefined;
   };
+  const toDocumentText = (markdown: string) => (restorer ? restorer.restore(markdown) : markdown);
 
   let timer: number | undefined;
   let pending: string | undefined;
   const flush = () => {
-    if (pending !== undefined) post({ type: 'edit', text: restorer ? restorer.restore(pending) : pending });
+    if (pending !== undefined) {
+      sentSinceBase = true;
+      post({ type: 'edit', text: toDocumentText(pending) });
+    }
     pending = undefined;
     timer = undefined;
   };
@@ -44,8 +55,28 @@ export function bootstrap(adapter: EditorAdapter): void {
     clearTimeout(timer);
     timer = window.setTimeout(flush, EDIT_DEBOUNCE_MS);
   };
-  // タブを閉じる・切り替える直前の入力を取りこぼさない
-  window.addEventListener('blur', flush);
+
+  /**
+   * エディタの通知を待たずに、今の内容を文書に書き込む形で返す。変更がなければ null。
+   * Vditor は最後の入力から 800ms（undoDelay）経つまで input を通知しないため、
+   * 保存や切り替えの直前はこれで直接読み取る
+   */
+  const takeCurrentText = (): string | null => {
+    clearTimeout(timer);
+    timer = undefined;
+    pending = undefined;
+    if (!ready || readOnly) return null;
+    const value = adapter.getValue();
+    if (value === baseValue && !sentSinceBase) return null;
+    sentSinceBase = true;
+    return toDocumentText(value);
+  };
+
+  // 別のタブ・テキストエディタへ移る直前の入力を取りこぼさない
+  window.addEventListener('blur', () => {
+    const text = takeCurrentText();
+    if (text !== null) post({ type: 'edit', text });
+  });
 
   const applyReadOnly = (value: boolean) => {
     readOnly = value;
@@ -63,6 +94,7 @@ export function bootstrap(adapter: EditorAdapter): void {
         initialized = adapter.init(root, message.options, emitEdit);
         await initialized;
         resetBase(message.options.text);
+        ready = true;
         applyReadOnly(message.options.readOnly);
         return;
       }
@@ -75,9 +107,15 @@ export function bootstrap(adapter: EditorAdapter): void {
           adapter.update(message.text);
           resetBase(message.text);
           break;
-        case 'setReadOnly':
-          flush();
+        case 'setReadOnly': {
+          const text = takeCurrentText();
+          if (text !== null) post({ type: 'edit', text });
           applyReadOnly(message.readOnly);
+          break;
+        }
+        case 'flush':
+          // 保存の直前に拡張ホストから呼ばれる
+          post({ type: 'flushed', id: message.id, text: takeCurrentText() });
           break;
       }
     } catch (e) {

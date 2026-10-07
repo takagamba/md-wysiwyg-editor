@@ -13,10 +13,14 @@ export interface InitOptions {
 export type HostToWebview =
   | { type: 'init'; options: InitOptions }
   | { type: 'update'; text: string }
-  | { type: 'setReadOnly'; readOnly: boolean };
+  | { type: 'setReadOnly'; readOnly: boolean }
+  /** 保存の直前に、エディタの最新の内容を求める */
+  | { type: 'flush'; id: number };
 
 export type WebviewToHost =
   | { type: 'ready' }
   | { type: 'edit'; text: string }
+  /** flush への応答。変更がなければ text は null */
+  | { type: 'flushed'; id: number; text: string | null }
   | { type: 'openLink'; href: string }
   | { type: 'error'; message: string };

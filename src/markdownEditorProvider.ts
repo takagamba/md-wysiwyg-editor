@@ -5,6 +5,9 @@ export const VIEW_TYPE = 'mdWysiwyg.vditor';
 
 const READONLY_CONTEXT_KEY = 'mdWysiwyg.readOnly';
 
+/** 保存前に Webview の応答を待つ上限。VS Code は保存前処理全体に約 1.5 秒の上限を設けている */
+const FLUSH_TIMEOUT_MS = 1000;
+
 /** 改行コードを LF に揃える（Webview 側は常に LF で扱う） */
 const toLf = (s: string) => s.replace(/\r\n?/g, '\n');
 
@@ -21,6 +24,8 @@ export class EditorSession implements vscode.Disposable {
   private readOnly: boolean;
   private readonly disposables: vscode.Disposable[] = [];
   private pendingEdit: Promise<void> = Promise.resolve();
+  private flushSeq = 0;
+  private readonly flushWaiters = new Map<number, (text: string | null) => void>();
 
   static get active(): EditorSession | undefined {
     return EditorSession.activeSession;
@@ -61,6 +66,11 @@ export class EditorSession implements vscode.Disposable {
         if (text === this.webviewText) return;
         this.webviewText = text;
         this.post({ type: 'update', text });
+      }),
+      // 保存の直前に Webview の最新の内容を取り込む（Vditor は入力から 800ms 経つまで通知しないため）
+      vscode.workspace.onWillSaveTextDocument((e) => {
+        if (e.document.uri.toString() !== document.uri.toString() || this.readOnly) return;
+        e.waitUntil(this.editsBeforeSave());
       }),
       panel.onDidChangeViewState(() => {
         if (panel.active) this.activate();
@@ -118,6 +128,9 @@ export class EditorSession implements vscode.Disposable {
         // 連続入力で WorkspaceEdit が追い越さないよう直列化する
         this.pendingEdit = this.pendingEdit.then(() => this.applyToDocument(m.text));
         break;
+      case 'flushed':
+        this.flushWaiters.get(m.id)?.(m.text);
+        break;
       case 'openLink':
         void this.openLink(m.href);
         break;
@@ -127,13 +140,46 @@ export class EditorSession implements vscode.Disposable {
     }
   }
 
-  /** 変更された範囲だけを置き換える（Undo の粒度と差分表示をなるべく小さくする） */
+  /** Webview に最新の内容を求め、保存前に適用する編集を返す */
+  private async editsBeforeSave(): Promise<vscode.TextEdit[]> {
+    const text = await this.requestFlush();
+    await this.pendingEdit;
+    if (text === null || this.readOnly) return [];
+    this.webviewText = text;
+    const edit = this.diffEdit(text);
+    return edit ? [edit] : [];
+  }
+
+  private requestFlush(): Promise<string | null> {
+    const id = ++this.flushSeq;
+    return new Promise((resolve) => {
+      const done = (text: string | null) => {
+        clearTimeout(timer);
+        this.flushWaiters.delete(id);
+        resolve(text);
+      };
+      // Webview が初期化前などで応答しない場合は、何もせずに保存させる
+      const timer = setTimeout(() => done(null), FLUSH_TIMEOUT_MS);
+      this.flushWaiters.set(id, done);
+      this.post({ type: 'flush', id });
+    });
+  }
+
   private async applyToDocument(newTextLf: string): Promise<void> {
+    const edit = this.diffEdit(newTextLf);
+    if (!edit) return;
+    const workspaceEdit = new vscode.WorkspaceEdit();
+    workspaceEdit.set(this.document.uri, [edit]);
+    await vscode.workspace.applyEdit(workspaceEdit);
+  }
+
+  /** 変更された範囲だけを置き換える編集（Undo の粒度と差分表示をなるべく小さくする）。変更がなければ undefined */
+  private diffEdit(newTextLf: string): vscode.TextEdit | undefined {
     const doc = this.document;
     const eol = doc.eol === vscode.EndOfLine.CRLF ? '\r\n' : '\n';
     const oldText = doc.getText();
     const newText = eol === '\n' ? newTextLf : newTextLf.replace(/\n/g, eol);
-    if (oldText === newText) return;
+    if (oldText === newText) return undefined;
 
     let start = 0;
     const minLen = Math.min(oldText.length, newText.length);
@@ -145,13 +191,10 @@ export class EditorSession implements vscode.Disposable {
       newEnd--;
     }
 
-    const edit = new vscode.WorkspaceEdit();
-    edit.replace(
-      doc.uri,
+    return vscode.TextEdit.replace(
       new vscode.Range(doc.positionAt(start), doc.positionAt(oldEnd)),
       newText.slice(start, newEnd),
     );
-    await vscode.workspace.applyEdit(edit);
   }
 
   private async openLink(href: string): Promise<void> {

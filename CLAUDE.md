@@ -41,6 +41,7 @@ npm run package     # .vsix を生成（vscode:prepublish で --production ビ�
 
 - **Vditor の書き出しは冪等でない**（同じ文書を 2 回往復させると結果が変わる）。往復結果の比較で検証する場合は、Markdown 同士ではなく `lute.Md2HTML` の結果（空白を正規化）を比べる
 - Vditor の `input` コールバックは最後の入力から `undoDelay`（800ms）後に呼ばれる。さらに common.ts で 150ms デバウンスしている
+  → 入力直後の保存で最後の入力が漏れないよう、保存前（`onWillSaveTextDocument`）にホストが `flush` を送り、Webview は `getValue()` で直接読んだ内容を `flushed` で返す。ホストはそれを `waitUntil` の TextEdit として保存に含める（応答がなければ 1 秒で諦めてそのまま保存）。blur・閲覧モード切替時も同様に直接読む
 - Lute（Vditor の Markdown エンジン）は一部の入力で panic する（Vditor 自身の出力でも起きる）
 - **Vditor はアイコン JS を同期 XHR + インライン script で読み込む** → CSP で止められる。HTML 側で `id="vditorIconScript"` を nonce 付きで先に読み込んで回避している
 - Vditor は lute・i18n・KaTeX・Mermaid などを `cdn` オプションの URL から実行時に読み込む。外部 CDN は使わず、`out/vditor/dist` に同梱したコピーを `asWebviewUri` で指定する

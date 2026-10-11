@@ -11,6 +11,7 @@ npm run build       # esbuild で out/ に拡張・Webview をビルドし、Vdi
 npm run watch
 npm run typecheck   # tsc --noEmit（esbuild は型チェックしないので変更後は必ず実行）
 npm run package     # .vsix を生成（vscode:prepublish で --production ビルド）
+npm run notices     # THIRD_PARTY_NOTICES.md を再生成（依存関係・Vditor を更新したら実行して差分を確認）
 ```
 
 デバッグ実行は VS Code で F5（`.vscode/launch.json`、`sample/` を開いた Extension Host が起動）。
@@ -25,6 +26,7 @@ npm run package     # .vsix を生成（vscode:prepublish で --production ビ�
 - `webview/common.ts` — `EditorAdapter` インターフェースと `bootstrap()`（メッセージ処理、edit のデバウンス、閲覧モード、リンクのクリック処理）
 - `webview/vditor.ts` — Vditor のアダプタ（`EditorAdapter` の実装）。別のエンジンを試す場合も `EditorAdapter` を実装する
 - `webview/restoreFormat.ts` — 編集していない行を元の書き方に戻す（`FormatRestorer`）。Webview 側で edit を送る直前に適用する
+- `scripts/third-party-notices.mjs` — THIRD_PARTY_NOTICES.md の生成。npm パッケージは esbuild の metafile から自動で集め、`out/vditor/dist` の Vditor アセットは `VDITOR_ASSETS` に手で列挙する（ライセンス文の原文は `scripts/licenses/`）。Vditor を更新したらアセットのバージョンとライセンスを確認し直す
 - `esbuild.mjs` — 拡張（node/cjs、`.css` は文字列として読む）と Webview（browser/iife）の 2 ビルド
 
 ## 設計上の決まりごと

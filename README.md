@@ -80,3 +80,10 @@ Vditor は編集のたびに文書全体を Markdown に書き出し直すため
 npm run package    # md-wysiwyg-editor-0.1.0.vsix を生成
 code --install-extension md-wysiwyg-editor-0.1.0.vsix
 ```
+
+## ライセンス
+
+[MIT](LICENSE)
+
+配布物（.vsix）には Vditor・Lute・KaTeX・Mermaid・puppeteer-core などの第三者ソフトウェアが含まれます。
+それぞれのライセンスは [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を参照してください。

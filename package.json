@@ -216,7 +216,8 @@
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit -p .",
     "vscode:prepublish": "node esbuild.mjs --production",
-    "package": "npx @vscode/vsce package --no-dependencies"
+    "package": "npx @vscode/vsce package --no-dependencies",
+    "notices": "node scripts/third-party-notices.mjs"
   },
   "dependencies": {
     "highlight.js": "^11.12.0",

@@ -26,7 +26,7 @@
     "customEditors": [
       {
         "viewType": "mdWysiwyg.vditor",
-        "displayName": "Markdown WYSIWYG",
+        "displayName": "Markdown を見たまま編集",
         "selector": [
           {
             "filenamePattern": "*.md"
@@ -64,7 +64,7 @@
       },
       {
         "command": "mdWysiwyg.openWysiwyg",
-        "title": "WYSIWYG で開く",
+        "title": "Markdown を見たまま編集",
         "category": "Markdown WYSIWYG",
         "icon": "$(preview)"
       },

@@ -42,7 +42,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     vscode.commands.registerCommand('mdWysiwyg.setDefaultEditor', async () => {
       const items = [
-        { label: 'WYSIWYG エディタ', viewType: VIEW_TYPE },
+        { label: 'Markdown を見たまま編集', viewType: VIEW_TYPE },
         { label: 'テキストエディタ（VS Code 標準）', viewType: 'default' },
       ];
       const pick = await vscode.window.showQuickPick(items, { placeHolder: '*.md / *.markdown を開くエディタ' });
@@ -52,7 +52,7 @@ export function activate(context: vscode.ExtensionContext): void {
       assoc['*.md'] = pick.viewType;
       assoc['*.markdown'] = pick.viewType;
       await config.update('editorAssociations', assoc, vscode.ConfigurationTarget.Global);
-      void vscode.window.showInformationMessage(`*.md を ${pick.label} で開くように設定しました。`);
+      void vscode.window.showInformationMessage(`*.md の既定のエディタを「${pick.label}」にしました。`);
     }),
   );
 }

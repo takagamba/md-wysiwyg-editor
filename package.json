@@ -3,8 +3,17 @@
   "displayName": "Markdown WYSIWYG Editor (Vditor)",
   "description": "Markdown をレンダリング表示のまま同じタブで編集。閲覧モードと PDF 出力に対応。",
   "version": "0.1.0",
-  "publisher": "local",
+  "publisher": "takagamba",
   "license": "MIT",
+  "author": "takagamba",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/takagamba/md-wysiwyg-editor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/takagamba/md-wysiwyg-editor/issues"
+  },
+  "homepage": "https://github.com/takagamba/md-wysiwyg-editor#readme",
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -207,7 +216,7 @@
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit -p .",
     "vscode:prepublish": "node esbuild.mjs --production",
-    "package": "npx @vscode/vsce package --no-dependencies --allow-missing-repository --skip-license"
+    "package": "npx @vscode/vsce package --no-dependencies"
   },
   "dependencies": {
     "highlight.js": "^11.12.0",

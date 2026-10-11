@@ -27,6 +27,7 @@ npm run notices     # THIRD_PARTY_NOTICES.md を再生成（依存関係・Vdito
 - `webview/vditor.ts` — Vditor のアダプタ（`EditorAdapter` の実装）。別のエンジンを試す場合も `EditorAdapter` を実装する
 - `webview/restoreFormat.ts` — 編集していない行を元の書き方に戻す（`FormatRestorer`）。Webview 側で edit を送る直前に適用する
 - `scripts/third-party-notices.mjs` — THIRD_PARTY_NOTICES.md の生成。npm パッケージは esbuild の metafile から自動で集め、`out/vditor/dist` の Vditor アセットは `VDITOR_ASSETS` に手で列挙する（ライセンス文の原文は `scripts/licenses/`）。Vditor を更新したらアセットのバージョンとライセンスを確認し直す
+- `scripts/collect-asset-licenses.mjs` — Vditor アセット（mermaid・markmap など、ビルド済みファイル）に組み込まれている依存ライブラリのライセンスを集めて `scripts/licenses/asset-deps.json` に書く。同じバージョンを一時フォルダに npm install して依存ツリーをたどる（要ネットワーク）。CLI 専用など配布ファイルに含まれないと確認したものだけ除外する。アセットのバージョンは、ファイル内のバージョン表記か unpkg の配布ファイルとのハッシュ照合で確かめる（smiles-drawer の `version="2.4.2"` は中の chroma-js の版だった）
 - `esbuild.mjs` — 拡張（node/cjs、`.css` は文字列として読む）と Webview（browser/iife）の 2 ビルド
 
 ## 設計上の決まりごと

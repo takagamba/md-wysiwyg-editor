@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: 型チェック
+        run: npm run typecheck
+
+      # 書き方の復元（Node）と Webview（ヘッドレス Chrome。ubuntu-latest に同梱）
+      - name: テスト
+        run: npm test
+
+      # VS Code（安定版をダウンロード）で拡張機能を動かす。画面がないので xvfb を使う
+      - name: VS Code でのテスト
+        run: xvfb-run -a npm run test:vscode
+
+      - name: .vsix の作成
+        run: npm run package

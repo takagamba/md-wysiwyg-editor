@@ -18,6 +18,8 @@
 ```bash
 npm install
 npm run build      # out/ に拡張と Webview をビルド
+npm test           # テスト（Chrome または Edge が必要）
+npm run test:vscode  # VS Code を起動して拡張機能のテスト
 ```
 
 VS Code でこのフォルダを開き **F5**（「拡張機能を実行」）→ `sample/` フォルダが開いた新しいウィンドウが起動します。

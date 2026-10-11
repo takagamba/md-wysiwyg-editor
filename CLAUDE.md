@@ -11,6 +11,8 @@ npm run build       # esbuild で out/ に拡張・Webview をビルドし、Vdi
 npm run watch
 npm run typecheck   # tsc --noEmit（esbuild は型チェックしないので変更後は必ず実行）
 npm run package     # .vsix を生成（vscode:prepublish で --production ビルド）
+npm test            # ビルドしてからテスト（書き方の復元・Webview）
+npm run test:vscode # VS Code を起動して拡張機能のテスト（VSCODE_EXECUTABLE でインストール済みの Code.exe を使える）
 npm run notices     # THIRD_PARTY_NOTICES.md を再生成（依存関係・Vditor を更新したら実行して差分を確認）
 ```
 
@@ -21,6 +23,7 @@ npm run notices     # THIRD_PARTY_NOTICES.md を再生成（依存関係・Vdito
 - `src/extension.ts` — コマンド登録、カスタムエディタ登録、既定エディタ設定
 - `src/markdownEditorProvider.ts` — `EditorSession`（1 タブ = 1 セッション）。Webview HTML/CSP 生成、文書との同期、閲覧モード、リンクを開く処理
 - `src/pdfExport.ts` — markdown-it で HTML 化 → 一時ファイル（file://）→ puppeteer-core でローカルの Edge/Chrome を起動して PDF 化
+- `src/findBrowser.ts` — PDF 出力に使う Chrome / Edge を探す（vscode に依存しないので Webview のテストでも使う）
 - `src/markdownItPlugins.ts` — PDF 用の数式（`$`/`$$`）とタスクリストのプラグイン
 - `webview/protocol.ts` — ホスト⇔Webview のメッセージ型（両側から import）
 - `webview/common.ts` — `EditorAdapter` インターフェースと `bootstrap()`（メッセージ処理、edit のデバウンス、閲覧モード、リンクのクリック処理）
@@ -56,9 +59,11 @@ npm run notices     # THIRD_PARTY_NOTICES.md を再生成（依存関係・Vdito
 
 ## 検証方法
 
-リポジトリに自動テストはまだない。変更後は次の観点で確認する。
+変更後は `npm run typecheck` と `npm test` を実行する。拡張ホストや設定に関わる変更では `npm run test:vscode` も実行する。
+GitHub Actions（`.github/workflows/ci.yml`）では main への push と Pull Request でこれらすべてを実行する。
 
-- **Webview**: `out/webview/*.js` をローカル HTTP サーバーから配信し、`acquireVsCodeApi` をモックした HTML を本番と同じ CSP で puppeteer-core（Edge）から開く。`init`/`update`/`setReadOnly` を `postMessage` で送り、送信された `edit`/`openLink` を検査する。CSP 違反とコンソールエラーも確認する
-- **拡張本体**: `@vscode/test-electron` に、インストール済みの `Code.exe` を `vscodeExecutablePath` で渡し、`--user-data-dir` を分けて起動する。`vscode.openWith` で開いてタブ種別、dirty にならないこと、コマンドの動作を確認する
-- **PDF**: `vscode` を esbuild の `--alias` でモックして `exportPdf` を実行し、出力された PDF を確認する
-- **書き方の復元**: `node_modules/vditor/dist/js/lute/lute.min.js` は `globalThis.window = globalThis` にしてから require すれば Node で動く。`lute.VditorIRDOM2Md(lute.Md2VditorIRDOM(md))` が Vditor の往復とほぼ同じ。esbuild で `restoreFormat.ts` を cjs にして、(1) 未編集なら original と完全一致、(2) ランダム編集で復元結果と current の `Md2HTML` が一致、を確認する
+- `test/restoreFormat.test.mjs` — 書き方の復元。Lute（`node_modules/vditor/dist/js/lute/lute.min.js`）を Node で動かし（`test/helpers.mjs` の `vditorEngine()`）、`VditorIRDOM2Md(Md2VditorIRDOM(md))` を Vditor の往復の代わりに使う。(1) 未編集なら original と完全一致、(2) 1 行編集はその行だけ変わる、(3) ランダム編集で復元結果と current の `Md2HTML` が一致、を確認する
+- `test/webview.test.mjs` — ビルド済みの Webview をローカル HTTP サーバーから配信し、`acquireVsCodeApi` をモックした HTML を本番と同じ CSP で puppeteer-core（Chrome / Edge。`src/findBrowser.ts` で探す。`CHROME_PATH` で指定可）から開く。`init` / `update` / `flush` などを `postMessage` で送り、送信された `edit` / `flushed` を検査する。Vditor の通知は入力から約 1 秒後なので待ってから確認する
+- `test/vscode/` — `@vscode/test-electron` で VS Code を起動し、拡張ホスト内で `suite.js` を実行する。`--user-data-dir` を分けるので普段の設定には影響しない。ローカルでは `VSCODE_EXECUTABLE` にインストール済みの `Code.exe` を指定するとダウンロードを省ける（普段の VS Code が起動中だと `Error mutex already exists` が出るが無害）
+- フィクスチャは `test/fixtures/`。`sample/` は手動確認用なので、テストからは使わない
+- **PDF**（自動テストなし）: `vscode` を esbuild の `--alias` でモックして `exportPdf` を実行し、出力された PDF を確認する

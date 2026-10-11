@@ -222,6 +222,8 @@
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit -p .",
+    "test": "npm run build && node --test \"test/*.test.mjs\"",
+    "test:vscode": "npm run build && node test/vscode/run.mjs",
     "vscode:prepublish": "node esbuild.mjs --production",
     "package": "npx @vscode/vsce package --no-dependencies",
     "notices": "node scripts/third-party-notices.mjs"
@@ -235,6 +237,7 @@
   "devDependencies": {
     "@types/node": "^20.19.43",
     "@types/vscode": "1.90.0",
+    "@vscode/test-electron": "^3.1.0",
     "esbuild": "^0.28.2",
     "typescript": "^7.0.2"
   }

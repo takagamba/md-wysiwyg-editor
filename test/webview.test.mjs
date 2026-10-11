@@ -144,9 +144,34 @@ test('flush: 入力直後でも最新の内容を返し、未編集なら null �
   assert.ok(flushed.includes('動作確認用です。'), '本文が含まれる');
   assert.equal(changedLines(SAMPLE, flushed).added.length, 1);
   assert.match(changedLines(SAMPLE, flushed).added[0], /XYZ$/);
-  // Vditor の通知が後から届いても、同じ内容であること（保存後に未保存へ戻らない）
+  // Vditor の通知が後から届いても、flush と違う内容は送らない（保存後に未保存へ戻らない）
   await sleep(SETTLE_MS);
-  assert.equal((await edits()).at(-1), flushed);
+  assert.deepEqual((await edits()).filter((t) => t !== flushed), []);
+  await page.close();
+});
+
+test('入力は Vditor の通知（800ms 後）を待たずに送る（直後にタブを閉じても失われない）', { skip }, async () => {
+  const { page, edits, typeAtEndOf } = await openEditor();
+  await typeAtEndOf(P, '動作確認用', 'Q');
+  await sleep(500);
+  assert.match((await edits()).at(-1) ?? '', /動作確認用です。.*Q$/m);
+  // 後から届く Vditor の通知では、同じ内容を送り直さない
+  await sleep(SETTLE_MS);
+  assert.equal((await edits()).length, 1);
+  await page.close();
+});
+
+test('IME の変換中は送らず、確定してから送る', { skip }, async () => {
+  const { page, edits, typeAtEndOf } = await openEditor();
+  await typeAtEndOf(P, '動作確認用', '');
+  const cdp = await page.createCDPSession();
+  await cdp.send('Input.imeSetComposition', { text: 'へんかん', selectionStart: 4, selectionEnd: 4 });
+  await sleep(500);
+  assert.deepEqual(await edits(), [], '変換中は送らない');
+  await cdp.send('Input.insertText', { text: '変換' });
+  await sleep(500);
+  assert.match((await edits()).at(-1) ?? '', /動作確認用です。.*変換$/m);
+  assert.ok(!(await edits()).some((t) => t.includes('へんかん')), '確定前の文字を送らない');
   await page.close();
 });
 

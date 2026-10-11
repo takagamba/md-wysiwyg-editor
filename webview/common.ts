@@ -18,6 +18,8 @@ export interface EditorAdapter {
 }
 
 const EDIT_DEBOUNCE_MS = 150;
+/** キー入力から文書へ反映するまでの時間。Vditor の通知（800ms 後）を待たずに送る */
+const QUICK_EDIT_MS = 200;
 
 export function bootstrap(adapter: EditorAdapter): void {
   const root = document.getElementById('editor')!;
@@ -32,19 +34,29 @@ export function bootstrap(adapter: EditorAdapter): void {
   let baseValue = '';
   /** 読み込み後に edit を送ったか */
   let sentSinceBase = false;
+  /** 最後に文書へ送ったテキスト。同じ内容を何度も送らない */
+  let lastSent: string | undefined;
   const resetBase = (original: string) => {
     baseValue = adapter.getValue();
     sentSinceBase = false;
+    lastSent = undefined;
     restorer = preserveFormatting ? new FormatRestorer(original, baseValue) : undefined;
   };
   const toDocumentText = (markdown: string) => (restorer ? restorer.restore(markdown) : markdown);
 
+  const postEdit = (text: string) => {
+    if (text === lastSent) return;
+    lastSent = text;
+    post({ type: 'edit', text });
+  };
+
   let timer: number | undefined;
+  let quickTimer: number | undefined;
   let pending: string | undefined;
   const flush = () => {
     if (pending !== undefined) {
       sentSinceBase = true;
-      post({ type: 'edit', text: toDocumentText(pending) });
+      postEdit(toDocumentText(pending));
     }
     pending = undefined;
     timer = undefined;
@@ -63,7 +75,9 @@ export function bootstrap(adapter: EditorAdapter): void {
    */
   const takeCurrentText = (): string | null => {
     clearTimeout(timer);
+    clearTimeout(quickTimer);
     timer = undefined;
+    quickTimer = undefined;
     pending = undefined;
     if (!ready || readOnly) return null;
     const value = adapter.getValue();
@@ -72,11 +86,26 @@ export function bootstrap(adapter: EditorAdapter): void {
     return toDocumentText(value);
   };
 
-  // 別のタブ・テキストエディタへ移る直前の入力を取りこぼさない
-  window.addEventListener('blur', () => {
+  const sendCurrentText = () => {
     const text = takeCurrentText();
-    if (text !== null) post({ type: 'edit', text });
+    if (text !== null) postEdit(text);
+  };
+
+  // 別のタブ・テキストエディタへ移る直前の入力を取りこぼさない
+  window.addEventListener('blur', sendCurrentText);
+
+  // Vditor の通知は最後の入力から 800ms 後なので、その間にタブを閉じると入力が失われる。
+  // キー入力（DOM の input イベント）があれば短い間隔で直接読み取って送る。
+  // IME の変換中は確定前の文字を送らないよう、確定（compositionend）を待つ
+  const scheduleQuickEdit = () => {
+    if (!ready || readOnly) return;
+    clearTimeout(quickTimer);
+    quickTimer = window.setTimeout(sendCurrentText, QUICK_EDIT_MS);
+  };
+  root.addEventListener('input', (e) => {
+    if (!(e as InputEvent).isComposing) scheduleQuickEdit();
   });
+  root.addEventListener('compositionend', scheduleQuickEdit);
 
   const applyReadOnly = (value: boolean) => {
     readOnly = value;
@@ -103,20 +132,22 @@ export function bootstrap(adapter: EditorAdapter): void {
         case 'update':
           // 外部変更が来たら、送信待ちの古い編集は捨てる
           clearTimeout(timer);
+          clearTimeout(quickTimer);
           pending = undefined;
           adapter.update(message.text);
           resetBase(message.text);
           break;
-        case 'setReadOnly': {
-          const text = takeCurrentText();
-          if (text !== null) post({ type: 'edit', text });
+        case 'setReadOnly':
+          sendCurrentText();
           applyReadOnly(message.readOnly);
           break;
-        }
-        case 'flush':
-          // 保存の直前に拡張ホストから呼ばれる
-          post({ type: 'flushed', id: message.id, text: takeCurrentText() });
+        case 'flush': {
+          // 保存の直前に拡張ホストから呼ばれる。返した内容はホストが文書に反映する
+          const text = takeCurrentText();
+          if (text !== null) lastSent = text;
+          post({ type: 'flushed', id: message.id, text });
           break;
+        }
       }
     } catch (e) {
       post({ type: 'error', message: e instanceof Error ? e.message : String(e) });

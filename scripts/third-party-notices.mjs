@@ -3,7 +3,7 @@
 // .vsix に入る第三者のコードは 3 種類ある。
 //   1. out/extension.js にバンドルされる npm パッケージ … esbuild の metafile から自動で集める
 //   2. out/webview/vditor.js にバンドルされる npm パッケージ … 同上
-//   3. out/vditor/dist に丸ごとコピーする Vditor のアセット … VDITOR_ASSETS に手で列挙する
+//   3. out/vditor/dist にコピーする Vditor のアセット（MathJax は esbuild.mjs でコピー対象から外している） … VDITOR_ASSETS に手で列挙する
 //      （ビルド済みファイルなのでライセンス文が同梱されていないものが多い。取得した原文を scripts/licenses/ に置く）
 // 依存関係や Vditor を更新したら、このスクリプトを実行し直して差分を確認すること。
 
@@ -99,15 +99,6 @@ const VDITOR_ASSETS = [
       { name: 'D3 6.7.0', license: 'BSD-3-Clause', url: 'https://github.com/d3/d3', text: () => lic('d3.txt') },
       { name: 'Prism', license: 'MIT', url: 'https://github.com/PrismJS/prism', text: () => lic('prism.txt') },
     ],
-  },
-  {
-    name: 'MathJax',
-    version: '3.1.2',
-    path: 'mathjax/',
-    license: 'Apache-2.0',
-    url: 'https://github.com/mathjax/MathJax',
-    text: () => read(`${VDITOR_DIST}/mathjax/LICENSE`),
-    embedded: [{ name: 'Speech Rule Engine', license: 'Apache-2.0', url: 'https://github.com/Speech-Rule-Engine/speech-rule-engine', text: () => lic('sre.txt') }],
   },
   {
     name: 'Mermaid',

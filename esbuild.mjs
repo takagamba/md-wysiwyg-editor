@@ -48,8 +48,13 @@ const webviewConfig = {
 async function copyVditorAssets() {
   const dest = 'out/vditor/dist';
   if (existsSync(dest)) await rm(dest, { recursive: true, force: true });
+  // MathJax は数式エンジンに MathJax を指定したときだけ読み込まれる。KaTeX に固定しているので同梱しない
+  const unused = new Set(['node_modules/vditor/dist/js/mathjax']);
   for (const dir of ['js', 'css', 'images']) {
-    await cp(`node_modules/vditor/dist/${dir}`, `${dest}/${dir}`, { recursive: true });
+    await cp(`node_modules/vditor/dist/${dir}`, `${dest}/${dir}`, {
+      recursive: true,
+      filter: (src) => !unused.has(src.replaceAll('\\', '/')),
+    });
   }
 }
 

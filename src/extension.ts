@@ -42,19 +42,40 @@ export function activate(context: vscode.ExtensionContext): void {
 
     vscode.commands.registerCommand('mdWysiwyg.setDefaultEditor', async () => {
       const items = [
-        { label: 'Markdown を見たまま編集', viewType: VIEW_TYPE },
-        { label: 'テキストエディタ（VS Code 標準）', viewType: 'default' },
+        { label: 'Markdown を見たまま編集', openByDefault: true },
+        { label: 'テキストエディタ（VS Code 標準）', openByDefault: false },
       ];
       const pick = await vscode.window.showQuickPick(items, { placeHolder: '*.md / *.markdown を開くエディタ' });
       if (!pick) return;
-      const config = vscode.workspace.getConfiguration('workbench');
-      const assoc = { ...(config.get<Record<string, string>>('editorAssociations') ?? {}) };
-      assoc['*.md'] = pick.viewType;
-      assoc['*.markdown'] = pick.viewType;
-      await config.update('editorAssociations', assoc, vscode.ConfigurationTarget.Global);
+      // 設定を変えると onDidChangeConfiguration で editorAssociations に反映される
+      await vscode.workspace
+        .getConfiguration('mdWysiwyg')
+        .update('openByDefault', pick.openByDefault, vscode.ConfigurationTarget.Global);
       void vscode.window.showInformationMessage(`*.md の既定のエディタを「${pick.label}」にしました。`);
     }),
+
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('mdWysiwyg.openByDefault')) void applyOpenByDefault();
+    }),
   );
+}
+
+const MARKDOWN_PATTERNS = ['*.md', '*.markdown'];
+
+/**
+ * 設定 mdWysiwyg.openByDefault を VS Code 標準の workbench.editorAssociations（ユーザー設定）に反映する。
+ * 何も設定していなければカスタムエディタの priority: "default" により見たまま編集で開くので、
+ * インストールしただけではユーザー設定を書き換えない（設定を切り替えたときだけ書く）
+ */
+async function applyOpenByDefault(): Promise<void> {
+  const openByDefault = vscode.workspace.getConfiguration('mdWysiwyg').get<boolean>('openByDefault', true);
+  const viewType = openByDefault ? VIEW_TYPE : 'default';
+  const workbench = vscode.workspace.getConfiguration('workbench');
+  // ワークスペース設定の値をユーザー設定に書き写さないよう、ユーザー設定の値だけを読む
+  const assoc = { ...(workbench.inspect<Record<string, string>>('editorAssociations')?.globalValue ?? {}) };
+  if (MARKDOWN_PATTERNS.every((p) => assoc[p] === viewType)) return;
+  for (const p of MARKDOWN_PATTERNS) assoc[p] = viewType;
+  await workbench.update('editorAssociations', assoc, vscode.ConfigurationTarget.Global);
 }
 
 /** カスタムエディタ / テキストエディタのどちらがアクティブでも、表示中の Markdown の URI を返す */

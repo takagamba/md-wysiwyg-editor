@@ -21,7 +21,9 @@
     "Other"
   ],
   "main": "./out/extension.js",
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "customEditors": [
       {
@@ -35,7 +37,7 @@
             "filenamePattern": "*.markdown"
           }
         ],
-        "priority": "option"
+        "priority": "default"
       }
     ],
     "commands": [
@@ -150,6 +152,11 @@
     "configuration": {
       "title": "Markdown WYSIWYG",
       "properties": {
+        "mdWysiwyg.openByDefault": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "`.md` / `.markdown` ファイルを最初から「Markdown を見たまま編集」で開く。オフにすると VS Code 標準のテキストエディタで開く。\n\n切り替えると、VS Code の `#workbench.editorAssociations#`（ユーザー設定）を書き換える。"
+        },
         "mdWysiwyg.readOnlyByDefault": {
           "type": "boolean",
           "default": false,

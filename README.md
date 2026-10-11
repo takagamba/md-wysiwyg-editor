@@ -22,15 +22,16 @@ npm run build      # out/ に拡張と Webview をビルド
 
 VS Code でこのフォルダを開き **F5**（「拡張機能を実行」）→ `sample/` フォルダが開いた新しいウィンドウが起動します。
 
-1. `sample.md` を右クリック → **Markdown を見たまま編集**
-2. テキストエディタで開いている場合は、タイトルバーのアイコンからも切り替え可能
-3. `.md` を常に「Markdown を見たまま編集」で開きたい場合は、コマンドパレットで
-   **「Markdown WYSIWYG: \*.md を開く既定のエディタを設定」**
+1. `sample.md` を開くと「Markdown を見たまま編集」で表示されます
+2. テキストエディタとの切り替えは、タイトルバーのアイコンかエクスプローラーの右クリックから
+3. `.md` を最初からテキストエディタで開きたい場合は、設定 `mdWysiwyg.openByDefault` をオフにします
+   （コマンドパレットの **「Markdown WYSIWYG: \*.md を開く既定のエディタを設定」** でも切り替えられます）
 
 ## 設定
 
 | 設定 | 既定値 | 内容 |
 | --- | --- | --- |
+| `mdWysiwyg.openByDefault` | `true` | `.md` を最初から「Markdown を見たまま編集」で開く（オフで VS Code 標準のテキストエディタ） |
 | `mdWysiwyg.readOnlyByDefault` | `false` | 開いた時点で閲覧モードにする |
 | `mdWysiwyg.vditor.mode` | `ir` | Vditor のモード（`ir` 即時レンダリング / `wysiwyg` / `sv` 分割） |
 | `mdWysiwyg.preserveFormatting` | `true` | 編集していない部分を元の書き方のまま保存する |

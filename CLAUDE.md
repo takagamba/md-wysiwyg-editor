@@ -38,6 +38,7 @@ npm run notices     # THIRD_PARTY_NOTICES.md を再生成（依存関係・Vdito
 - 文書への反映は前方一致・後方一致で差分範囲を求め、その範囲だけを置換する（全文置換にしない）
 - 閲覧モードでは、ホスト側でも Webview からの edit を無視する（二重のガード）
 - **書き方の復元**: 「読み込んだ文書（original）」「それを Vditor が書き出したもの（normalized）」「現在の出力（current）」を行 diff で比べ、normalized から変わっていない行は original の行を使う。基準（original / normalized）は init と外部 update のたびに作り直す。表は 1 まとまり扱い、Vditor が足した空行は隣に行が追加されたら残す（消すと追加行がリストや引用に吸い込まれる）
+- **既定のエディタ**: カスタムエディタは `priority: "default"` なので、何も設定しなくても `.md` は見たまま編集で開く。設定 `mdWysiwyg.openByDefault` を切り替えたときだけ `workbench.editorAssociations` のユーザー設定（`inspect().globalValue`）を書き換える。インストールしただけではユーザー設定に書き込まない。設定変更を受け取るため `activationEvents` は `onStartupFinished`
 - CSP は nonce 方式。`'unsafe-inline'` のスクリプトは許可しない
 
 ## 落とし穴（実際に踏んだもの）

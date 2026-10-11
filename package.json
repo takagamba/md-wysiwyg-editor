@@ -1,7 +1,12 @@
 {
   "name": "md-wysiwyg-editor",
-  "displayName": "Markdown WYSIWYG Editor (Vditor)",
-  "description": "Markdown をレンダリング表示のまま同じタブで編集。閲覧モードと PDF 出力に対応。",
+  "displayName": "Markdown WYSIWYG + PDF",
+  "description": "Edit Markdown as it looks, in the same tab (Typora-like). Keeps your original formatting, with read-only mode and PDF export. / Markdown を見たまま同じタブで編集。閲覧モードと PDF 出力に対応。",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#1f1f1f",
+    "theme": "dark"
+  },
   "version": "0.1.0",
   "publisher": "takagamba",
   "license": "MIT",
@@ -19,6 +24,17 @@
   },
   "categories": [
     "Other"
+  ],
+  "keywords": [
+    "markdown",
+    "wysiwyg",
+    "editor",
+    "typora",
+    "vditor",
+    "pdf",
+    "mermaid",
+    "katex",
+    "japanese"
   ],
   "main": "./out/extension.js",
   "activationEvents": [

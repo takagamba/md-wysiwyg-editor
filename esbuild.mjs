@@ -58,6 +58,8 @@ async function copyVditorAssets() {
   }
 }
 
+// 配布用ビルドでは、開発ビルドの残り（ソースマップなど）が .vsix に入らないよう out/ を作り直す
+if (production) await rm('out', { recursive: true, force: true });
 await copyVditorAssets();
 
 if (watch) {

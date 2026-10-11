@@ -2,7 +2,7 @@
 
 VS Code 拡張。`.md` を同じタブ内の Webview で WYSIWYG 編集する（Custom Text Editor）。
 エディタは **Vditor**（以前は Milkdown も同梱していたが一本化した）。閲覧モードと PDF 出力を持つ。
-ユーザー向けの説明・設定一覧は README.md。コメントと UI 文言は日本語。
+ユーザー向けの説明・設定一覧は README.md（Marketplace に表示される。英語 + 日本語）、開発手順は CONTRIBUTING.md、変更履歴は CHANGELOG.md。コメントと UI 文言は日本語。
 
 ## コマンド
 
@@ -31,7 +31,8 @@ npm run notices     # THIRD_PARTY_NOTICES.md を再生成（依存関係・Vdito
 - `webview/restoreFormat.ts` — 編集していない行を元の書き方に戻す（`FormatRestorer`）。Webview 側で edit を送る直前に適用する
 - `scripts/third-party-notices.mjs` — THIRD_PARTY_NOTICES.md の生成。npm パッケージは esbuild の metafile から自動で集め、`out/vditor/dist` の Vditor アセットは `VDITOR_ASSETS` に手で列挙する（ライセンス文の原文は `scripts/licenses/`）。Vditor を更新したらアセットのバージョンとライセンスを確認し直す
 - `scripts/collect-asset-licenses.mjs` — Vditor アセット（mermaid・markmap など、ビルド済みファイル）に組み込まれている依存ライブラリのライセンスを集めて `scripts/licenses/asset-deps.json` に書く。同じバージョンを一時フォルダに npm install して依存ツリーをたどる（要ネットワーク）。CLI 専用など配布ファイルに含まれないと確認したものだけ除外する。アセットのバージョンは、ファイル内のバージョン表記か unpkg の配布ファイルとのハッシュ照合で確かめる（smiles-drawer の `version="2.4.2"` は中の chroma-js の版だった）
-- `esbuild.mjs` — 拡張（node/cjs、`.css` は文字列として読む）と Webview（browser/iife）の 2 ビルド
+- `esbuild.mjs` — 拡張（node/cjs、`.css` は文字列として読む）と Webview（browser/iife）の 2 ビルド。`--production` では out/ を消してから作る（ソースマップを .vsix に入れない）
+- `scripts/render-media.mjs` — `media/icon.svg` から `media/icon.png`（Marketplace 用）と README のスクリーンショットを作る。README の相対パスの画像は vsce が GitHub の URL に書き換える（リポジトリが Public でないと表示されない）
 
 ## 設計上の決まりごと
 

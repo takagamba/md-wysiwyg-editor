@@ -109,6 +109,33 @@ export function bootstrap(adapter: EditorAdapter): void {
   });
   root.addEventListener('compositionend', scheduleQuickEdit);
 
+  // ドロップ: エディタ（Vditor）より先に受け取る。
+  // Vditor はドロップした位置を使わないので、先にカーソルをそこへ移す（画像の保存結果もそこに挿入される）。
+  // VS Code のエクスプローラーから（Shift を押して）ドロップしたファイルは、相対パスのリンク・画像にする
+  root.addEventListener(
+    'drop',
+    (e) => {
+      if (!ready || readOnly || !e.dataTransfer) return;
+      const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
+      if (range) {
+        const selection = getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+      if (e.dataTransfer.types.includes('Files')) return;
+      const uris = [e.dataTransfer.getData('application/vnd.code.uri-list'), e.dataTransfer.getData('text/uri-list')]
+        .join('\n')
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter((s, i, all) => /^(file|vscode-remote):/i.test(s) && all.indexOf(s) === i);
+      if (uris.length === 0) return;
+      e.preventDefault();
+      e.stopPropagation();
+      post({ type: 'linkFiles', uris });
+    },
+    true,
+  );
+
   const applyReadOnly = (value: boolean) => {
     readOnly = value;
     badge.hidden = !value;

@@ -7,7 +7,7 @@
     "color": "#1f1f1f",
     "theme": "dark"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "takagamba",
   "license": "MIT",
   "author": "takagamba",
@@ -196,6 +196,11 @@
           "type": "boolean",
           "default": true,
           "description": "保存時、編集していない部分は元の書き方のまま残す。オフにすると Vditor が文書全体を書式を揃えて書き出す（`[x]` → `[X]`、表の列幅揃えなど）。"
+        },
+        "mdWysiwyg.imageFolder": {
+          "type": "string",
+          "default": "images",
+          "markdownDescription": "貼り付け・ドロップした画像を保存するフォルダ（文書のあるフォルダからの相対パス）。空にすると文書と同じフォルダに保存する。"
         },
         "mdWysiwyg.pdf.browserPath": {
           "type": "string",

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+- Paste or drop images: they are saved to the `images/` folder next to the document (setting `mdWysiwyg.imageFolder`) and inserted as relative links instead of base64 / 画像の貼り付け・ドロップに対応。文書のフォルダの `images/` に保存して相対パスで挿入する（base64 で埋め込まない）
+- Drop files from VS Code's Explorer (with `Shift`) to insert relative links / エクスプローラーから Shift を押しながらドロップしたファイルを相対パスで挿入
+- Find with `Ctrl+F` / `Ctrl+F` で検索できるようにした
+
 ## 0.2.0
 
 - Insert links and images by picking a file (toolbar buttons). The path is relative to the document. / ファイルを選んでリンク・画像を挿入するボタンを追加（文書からの相対パス）

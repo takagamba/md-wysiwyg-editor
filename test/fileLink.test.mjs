@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { importTs } from './helpers.mjs';
 
-const { markdownForFile } = await importTs('src/fileLink.ts');
+const { imageFileName, isImagePath, markdownForFile, numberedFileName } = await importTs('src/fileLink.ts');
 const root = path.join(os.tmpdir(), 'ws');
 const doc = path.join(root, 'docs', 'readme.md');
 
@@ -29,4 +29,19 @@ test('相対パスにできなければ file: URL', () => {
   if (process.platform === 'win32') {
     assert.equal(markdownForFile('C:\\docs\\readme.md', 'D:\\img\\b.png', 'image'), '![b](file:///D:/img/b.png)');
   }
+});
+
+test('貼り付けた画像の保存名: クリップボードの image.png は日時から名前を付け、それ以外は元の名前', () => {
+  const now = new Date(2026, 9, 12, 9, 5, 3);
+  assert.equal(imageFileName('image.png', 'image/png', now), 'image-20261012-090503.png');
+  assert.equal(imageFileName('', 'image/jpeg', now), 'image-20261012-090503.jpg');
+  assert.equal(imageFileName('構成図.PNG', 'image/png', now), '構成図.png');
+  assert.equal(imageFileName('a:b?.gif', 'image/gif', now), 'a_b_.gif');
+});
+
+test('名前が重なるときの連番と、画像の判定', () => {
+  assert.equal(numberedFileName('a.png', 2), 'a-2.png');
+  assert.equal(numberedFileName('noext', 1), 'noext-1');
+  assert.equal(isImagePath('x/y.JPG'), true);
+  assert.equal(isImagePath('x/y.md'), false);
 });

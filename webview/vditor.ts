@@ -56,6 +56,21 @@ const adapter: EditorAdapter = {
           hljs: { style: dark ? 'github-dark' : 'github', lineNumber: false },
           math: { engine: 'KaTeX' },
         },
+        upload: {
+          // 貼り付け・ドロップした画像は拡張ホストが文書のフォルダに保存する（Markdown に base64 で埋め込まない）
+          accept: 'image/*',
+          handler(files) {
+            const images = files.filter((f) => f.type.startsWith('image/'));
+            if (images.length > 0) {
+              void Promise.all(
+                images.map(async (f) => ({ name: f.name, type: f.type, data: new Uint8Array(await f.arrayBuffer()) })),
+              ).then((data) => post({ type: 'saveImages', files: data }));
+            }
+            return images.length < files.length
+              ? '画像以外のファイルは、ツールバーの「ファイルへのリンクを挿入」から挿入してください'
+              : null;
+          },
+        },
         input(value) {
           if (value === suppressed) return;
           suppressed = undefined;

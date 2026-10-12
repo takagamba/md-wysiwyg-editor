@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import type { HostToWebview, WebviewToHost } from '../webview/protocol';
-import { IMAGE_EXTENSIONS, markdownForFile } from './fileLink';
+import { IMAGE_EXTENSIONS, imageFileName, isImagePath, markdownForFile, numberedFileName } from './fileLink';
 
 export const VIEW_TYPE = 'mdWysiwyg.vditor';
 
@@ -138,6 +138,14 @@ export class EditorSession implements vscode.Disposable {
       case 'pickFile':
         void this.pickFile(m.kind);
         break;
+      case 'saveImages':
+        this.saveImages(m.files).catch((e) =>
+          vscode.window.showErrorMessage(`画像を保存できませんでした: ${e instanceof Error ? e.message : String(e)}`),
+        );
+        break;
+      case 'linkFiles':
+        this.linkFiles(m.uris);
+        break;
       case 'error':
         void vscode.window.showErrorMessage(`Markdown WYSIWYG: ${m.message}`);
         break;
@@ -228,6 +236,39 @@ export class EditorSession implements vscode.Disposable {
     this.post({ type: 'insert', text: markdownForFile(documentPath, picked[0].fsPath, kind) });
   }
 
+  /** 貼り付け・ドロップした画像を設定 imageFolder（文書のフォルダからの相対パス）に保存し、Webview に挿入させる */
+  private async saveImages(files: { name: string; type: string; data: Uint8Array }[]): Promise<void> {
+    if (this.readOnly || files.length === 0) return;
+    if (this.document.uri.scheme === 'untitled') {
+      void vscode.window.showWarningMessage('画像を貼り付けるには、先に文書を保存してください。');
+      return;
+    }
+    const setting = vscode.workspace.getConfiguration('mdWysiwyg').get('imageFolder', 'images');
+    const folder = vscode.Uri.joinPath(this.document.uri, '..', ...setting.split(/[\\/]/).filter(Boolean));
+    await vscode.workspace.fs.createDirectory(folder);
+    const now = new Date();
+    const lines: string[] = [];
+    for (const file of files) {
+      const name = imageFileName(file.name, file.type, now);
+      let target = vscode.Uri.joinPath(folder, name);
+      for (let n = 1; await exists(target); n++) target = vscode.Uri.joinPath(folder, numberedFileName(name, n));
+      await vscode.workspace.fs.writeFile(target, file.data);
+      lines.push(markdownForFile(this.document.uri.fsPath, target.fsPath, 'image'));
+    }
+    this.post({ type: 'insert', text: lines.join('\n') });
+  }
+
+  /** エクスプローラーからドロップされたファイルへの相対パスのリンク（画像なら画像）を挿入させる */
+  private linkFiles(uris: string[]): void {
+    if (this.readOnly) return;
+    const documentPath = this.document.uri.scheme === 'file' ? this.document.uri.fsPath : undefined;
+    const lines = uris
+      .map((u) => vscode.Uri.parse(u))
+      .filter((u) => u.scheme === this.document.uri.scheme)
+      .map((u) => markdownForFile(documentPath, u.fsPath, isImagePath(u.fsPath) ? 'image' : 'link'));
+    if (lines.length > 0) this.post({ type: 'insert', text: lines.join('\n') });
+  }
+
   private buildHtml(): string {
     const webview = this.panel.webview;
     const out = (...p: string[]) => webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'out', ...p));
@@ -277,7 +318,8 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
   static register(context: vscode.ExtensionContext): vscode.Disposable {
     return vscode.window.registerCustomEditorProvider(VIEW_TYPE, new MarkdownEditorProvider(context), {
       // 非表示タブの状態を保持（切り替えのたびに再初期化しない）
-      webviewOptions: { retainContextWhenHidden: true },
+      // enableFindWidget: Ctrl+F で VS Code の検索バーを出す
+      webviewOptions: { retainContextWhenHidden: true, enableFindWidget: true },
       supportsMultipleEditorsPerDocument: true,
     });
   }
@@ -286,6 +328,15 @@ export class MarkdownEditorProvider implements vscode.CustomTextEditorProvider {
 
   resolveCustomTextEditor(document: vscode.TextDocument, panel: vscode.WebviewPanel): void {
     new EditorSession(this.context, document, panel);
+  }
+}
+
+async function exists(uri: vscode.Uri): Promise<boolean> {
+  try {
+    await vscode.workspace.fs.stat(uri);
+    return true;
+  } catch {
+    return false;
   }
 }
 

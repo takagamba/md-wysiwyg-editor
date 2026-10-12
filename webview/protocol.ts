@@ -27,4 +27,8 @@ export type WebviewToHost =
   | { type: 'openLink'; href: string }
   /** ファイルを選んでリンク・画像を挿入する（ツールバーのボタン） */
   | { type: 'pickFile'; kind: 'link' | 'image' }
+  /** 貼り付け・ドロップした画像を文書のフォルダに保存して挿入する */
+  | { type: 'saveImages'; files: { name: string; type: string; data: Uint8Array }[] }
+  /** VS Code のエクスプローラーからドロップしたファイルへのリンク・画像を挿入する */
+  | { type: 'linkFiles'; uris: string[] }
   | { type: 'error'; message: string };

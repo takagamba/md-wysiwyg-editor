@@ -199,6 +199,55 @@ test('ツールバーのボタンでファイル選択を求め、返ってき�
   await page.close();
 });
 
+test('画像を貼り付けると、base64 で埋め込まずに保存を求める', { skip }, async () => {
+  const { page, edits, typeAtEndOf } = await openEditor();
+  await typeAtEndOf(P, '動作確認用', '');
+  await page.evaluate(() => {
+    const data = new DataTransfer();
+    data.items.add(new File([new Uint8Array([137, 80, 78, 71])], 'image.png', { type: 'image/png' }));
+    document.querySelector('.vditor-ir .vditor-reset').dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+  });
+  await page.waitForFunction(() => window.sent.some((m) => m.type === 'saveImages'));
+  const files = await page.evaluate(() =>
+    window.sent.find((m) => m.type === 'saveImages').files.map((f) => ({ name: f.name, type: f.type, data: [...f.data] })),
+  );
+  assert.deepEqual(files, [{ name: 'image.png', type: 'image/png', data: [137, 80, 78, 71] }]);
+  await sleep(SETTLE_MS);
+  assert.ok(!(await edits()).some((t) => t.includes('data:image')), 'base64 で埋め込まない');
+  await page.close();
+});
+
+test('エクスプローラーからのドロップは、ドロップした位置にリンクの挿入を求める', { skip }, async () => {
+  const { page, send, edits } = await openEditor();
+  const index = await page.$$eval(P, (els) => els.findIndex((e) => e.textContent.includes('動作確認用')));
+  await page.evaluate(
+    (sel, i) => {
+      const p = document.querySelectorAll(sel)[i];
+      // 段落の最後の文字の右側にドロップする（段落は折り返しているので、段落の矩形では位置が決まらない）
+      const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+      let last;
+      while (walker.nextNode()) if (walker.currentNode.textContent.trim()) last = walker.currentNode;
+      const charRange = document.createRange();
+      charRange.setStart(last, last.length - 1);
+      charRange.setEnd(last, last.length);
+      const r = charRange.getBoundingClientRect();
+      const rect = { right: r.right + 1, top: r.top, height: r.height };
+      const data = new DataTransfer();
+      data.setData('text/uri-list', 'file:///c%3A/ws/other.md\r\nhttps://example.com/');
+      p.dispatchEvent(new DragEvent('drop', { dataTransfer: data, clientX: rect.right - 1, clientY: rect.top + rect.height / 2, bubbles: true, cancelable: true }));
+    },
+    P,
+    index,
+  );
+  const uris = await page.evaluate(() => window.sent.find((m) => m.type === 'linkFiles')?.uris);
+  assert.deepEqual(uris, ['file:///c%3A/ws/other.md']);
+  await send({ type: 'insert', text: '[other](other.md)' });
+  await sleep(500);
+  const { removed, added } = changedLines(SAMPLE, (await edits()).at(-1));
+  assert.deepEqual(added, [removed[0] + '[other](other.md)'], 'ドロップした段落の末尾に入る');
+  await page.close();
+});
+
 test('閲覧モードでは入力も flush も文書を変えない', { skip }, async () => {
   const { page, edits, flush } = await openEditor({ readOnly: true });
   assert.equal(await page.$eval('#readonly-badge', (e) => e.hidden), false, '閲覧モードの表示が出る');

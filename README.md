@@ -18,7 +18,9 @@ Powered by [Vditor](https://github.com/Vanessa219/vditor) in Typora-like instant
 - **Keeps your writing style** — lines you did not edit are saved exactly as they were (see below)
 - **Read-only mode** — 🔒 button in the title bar or `Ctrl+Alt+R`
 - **PDF export** — PDF button in the title bar or the Explorer context menu (uses the Edge / Chrome installed on your PC)
-- **Insert links and images by picking a file** — toolbar buttons insert a path relative to the document
+- **Paste or drop images** — pasted screenshots and dropped image files are saved next to the document (`images/` by default) and inserted as relative links, not embedded as base64
+- **Insert links and images by picking a file** — toolbar buttons insert a path relative to the document. You can also drop files from VS Code's Explorer (hold `Shift` while dropping)
+- **Find** — `Ctrl+F`
 - Math (KaTeX), diagrams (Mermaid, ECharts, Graphviz, and more), syntax highlighting, tables, task lists
 - Works with VS Code's own save, undo, dirty indicator, Git diff, and side-by-side editing with the text editor
 - Follows VS Code's light / dark theme
@@ -50,6 +52,7 @@ Opening a file never marks it as modified. Set `mdWysiwyg.preserveFormatting` to
 | `mdWysiwyg.readOnlyByDefault` | `false` | Open files in read-only mode |
 | `mdWysiwyg.vditor.mode` | `ir` | Editing mode: `ir` (instant rendering), `wysiwyg`, `sv` (split view) |
 | `mdWysiwyg.preserveFormatting` | `true` | Keep the original text of lines you did not edit |
+| `mdWysiwyg.imageFolder` | `images` | Folder for pasted / dropped images, relative to the document (empty: the document's folder) |
 | `mdWysiwyg.pdf.browserPath` | auto | Chrome / Edge used for PDF export |
 | `mdWysiwyg.pdf.format` | `A4` | Paper size |
 | `mdWysiwyg.pdf.margin` | `20mm` | Margin |
@@ -78,7 +81,9 @@ Opening a file never marks it as modified. Set `mdWysiwyg.preserveFormatting` to
 - **元の書き方を残す** — 編集していない行は、元のファイルの書き方のまま保存します
 - **閲覧モード** — タイトルバーの 🔒 ボタン / `Ctrl+Alt+R`
 - **PDF 出力** — タイトルバーの PDF ボタン / エクスプローラーの右クリック（PC の Edge / Chrome を使います）
-- **ファイルを選んでリンク・画像を挿入** — ツールバーのボタンから。文書からの相対パスで挿入します
+- **画像の貼り付け・ドロップ** — 貼り付けたスクリーンショットやドロップした画像ファイルを文書のフォルダ（既定は `images/`）に保存し、相対パスで挿入します（base64 で埋め込みません）
+- **ファイルを選んでリンク・画像を挿入** — ツールバーのボタンから。文書からの相対パスで挿入します。VS Code のエクスプローラーから `Shift` を押しながらドロップしても挿入できます
+- **検索** — `Ctrl+F`
 - 数式（KaTeX）、図（Mermaid・ECharts・Graphviz など）、コードのハイライト、表、タスクリスト
 - 保存・元に戻す・未保存マーク・Git の差分・テキストエディタとの同時編集は VS Code の機能がそのまま使えます
 - VS Code のライト / ダークテーマに合わせて表示します
@@ -109,6 +114,7 @@ Vditor は編集のたびに文書全体を書き出し直すため、そのま�
 | `mdWysiwyg.readOnlyByDefault` | `false` | 開いた時点で閲覧モードにする |
 | `mdWysiwyg.vditor.mode` | `ir` | 編集モード（`ir` 即時レンダリング / `wysiwyg` / `sv` 分割） |
 | `mdWysiwyg.preserveFormatting` | `true` | 編集していない部分を元の書き方のまま保存する |
+| `mdWysiwyg.imageFolder` | `images` | 貼り付け・ドロップした画像の保存先（文書のフォルダからの相対パス。空なら文書と同じフォルダ） |
 | `mdWysiwyg.pdf.browserPath` | 自動検出 | PDF 出力に使う Chrome / Edge |
 | `mdWysiwyg.pdf.format` | `A4` | 用紙サイズ |
 | `mdWysiwyg.pdf.margin` | `20mm` | 余白 |

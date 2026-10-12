@@ -15,7 +15,9 @@ export type HostToWebview =
   | { type: 'update'; text: string }
   | { type: 'setReadOnly'; readOnly: boolean }
   /** 保存の直前に、エディタの最新の内容を求める */
-  | { type: 'flush'; id: number };
+  | { type: 'flush'; id: number }
+  /** カーソル位置に Markdown を挿入する（ファイル選択の結果） */
+  | { type: 'insert'; text: string };
 
 export type WebviewToHost =
   | { type: 'ready' }
@@ -23,4 +25,6 @@ export type WebviewToHost =
   /** flush への応答。変更がなければ text は null */
   | { type: 'flushed'; id: number; text: string | null }
   | { type: 'openLink'; href: string }
+  /** ファイルを選んでリンク・画像を挿入する（ツールバーのボタン） */
+  | { type: 'pickFile'; kind: 'link' | 'image' }
   | { type: 'error'; message: string };

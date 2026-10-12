@@ -14,6 +14,8 @@ export interface EditorAdapter {
   update(markdown: string): void;
   /** エディタが現在の内容を書き出した Markdown */
   getValue(): string;
+  /** カーソル位置に Markdown を挿入する */
+  insert(markdown: string): void;
   setReadOnly(readOnly: boolean): void;
 }
 
@@ -140,6 +142,11 @@ export function bootstrap(adapter: EditorAdapter): void {
         case 'setReadOnly':
           sendCurrentText();
           applyReadOnly(message.readOnly);
+          break;
+        case 'insert':
+          if (readOnly) break;
+          adapter.insert(message.text);
+          scheduleQuickEdit();
           break;
         case 'flush': {
           // 保存の直前に拡張ホストから呼ばれる。返した内容はホストが文書に反映する

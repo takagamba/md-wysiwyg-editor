@@ -1,5 +1,10 @@
 # Markdown WYSIWYG + PDF
 
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/takagamba.markdown-wysiwyg-pdf)](https://marketplace.visualstudio.com/items?itemName=takagamba.markdown-wysiwyg-pdf)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/takagamba.markdown-wysiwyg-pdf)](https://marketplace.visualstudio.com/items?itemName=takagamba.markdown-wysiwyg-pdf)
+[![CI](https://github.com/takagamba/md-wysiwyg-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/takagamba/md-wysiwyg-editor/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 [日本語](#日本語)
 
 Edit Markdown files **as they look, in the same tab** — no side-by-side preview needed.
@@ -13,6 +18,7 @@ Powered by [Vditor](https://github.com/Vanessa219/vditor) in Typora-like instant
 - **Keeps your writing style** — lines you did not edit are saved exactly as they were (see below)
 - **Read-only mode** — 🔒 button in the title bar or `Ctrl+Alt+R`
 - **PDF export** — PDF button in the title bar or the Explorer context menu (uses the Edge / Chrome installed on your PC)
+- **Insert links and images by picking a file** — toolbar buttons insert a path relative to the document
 - Math (KaTeX), diagrams (Mermaid, ECharts, Graphviz, and more), syntax highlighting, tables, task lists
 - Works with VS Code's own save, undo, dirty indicator, Git diff, and side-by-side editing with the text editor
 - Follows VS Code's light / dark theme
@@ -72,6 +78,7 @@ Opening a file never marks it as modified. Set `mdWysiwyg.preserveFormatting` to
 - **元の書き方を残す** — 編集していない行は、元のファイルの書き方のまま保存します
 - **閲覧モード** — タイトルバーの 🔒 ボタン / `Ctrl+Alt+R`
 - **PDF 出力** — タイトルバーの PDF ボタン / エクスプローラーの右クリック（PC の Edge / Chrome を使います）
+- **ファイルを選んでリンク・画像を挿入** — ツールバーのボタンから。文書からの相対パスで挿入します
 - 数式（KaTeX）、図（Mermaid・ECharts・Graphviz など）、コードのハイライト、表、タスクリスト
 - 保存・元に戻す・未保存マーク・Git の差分・テキストエディタとの同時編集は VS Code の機能がそのまま使えます
 - VS Code のライト / ダークテーマに合わせて表示します

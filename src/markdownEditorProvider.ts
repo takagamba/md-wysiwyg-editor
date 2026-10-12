@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import type { HostToWebview, WebviewToHost } from '../webview/protocol';
+import { IMAGE_EXTENSIONS, markdownForFile } from './fileLink';
 
 export const VIEW_TYPE = 'mdWysiwyg.vditor';
 
@@ -134,6 +135,9 @@ export class EditorSession implements vscode.Disposable {
       case 'openLink':
         void this.openLink(m.href);
         break;
+      case 'pickFile':
+        void this.pickFile(m.kind);
+        break;
       case 'error':
         void vscode.window.showErrorMessage(`Markdown WYSIWYG: ${m.message}`);
         break;
@@ -208,6 +212,20 @@ export class EditorSession implements vscode.Disposable {
       ? vscode.Uri.parse(pathPart)
       : vscode.Uri.joinPath(this.document.uri, '..', decodeURIComponent(pathPart));
     await vscode.commands.executeCommand('vscode.open', target);
+  }
+
+  /** ファイルを選ばせ、文書からの相対パスのリンク・画像を Webview に挿入させる */
+  private async pickFile(kind: 'link' | 'image'): Promise<void> {
+    if (this.readOnly) return;
+    const picked = await vscode.window.showOpenDialog({
+      defaultUri: vscode.Uri.joinPath(this.document.uri, '..'),
+      canSelectMany: false,
+      openLabel: kind === 'image' ? '画像を挿入' : 'リンクを挿入',
+      filters: kind === 'image' ? { 画像: IMAGE_EXTENSIONS } : undefined,
+    });
+    if (!picked?.[0]) return;
+    const documentPath = this.document.uri.scheme === 'file' ? this.document.uri.fsPath : undefined;
+    this.post({ type: 'insert', text: markdownForFile(documentPath, picked[0].fsPath, kind) });
   }
 
   private buildHtml(): string {

@@ -184,6 +184,21 @@ test('blur で入力直後の内容をすぐに送る', { skip }, async () => {
   await page.close();
 });
 
+test('ツールバーのボタンでファイル選択を求め、返ってきたリンク・画像をカーソル位置に挿入する', { skip }, async () => {
+  const { page, send, edits, typeAtEndOf } = await openEditor();
+  await typeAtEndOf(P, '動作確認用', '');
+  await page.click('.vditor-toolbar button[data-type="insert-image"]');
+  await page.click('.vditor-toolbar button[data-type="insert-file-link"]');
+  const kinds = await page.evaluate(() => window.sent.filter((m) => m.type === 'pickFile').map((m) => m.kind));
+  assert.deepEqual(kinds, ['image', 'link']);
+  await send({ type: 'insert', text: '[other](other.md)' });
+  await sleep(500);
+  const { removed, added } = changedLines(SAMPLE, (await edits()).at(-1));
+  assert.equal(removed.length, 1);
+  assert.deepEqual(added, [removed[0] + '[other](other.md)']);
+  await page.close();
+});
+
 test('閲覧モードでは入力も flush も文書を変えない', { skip }, async () => {
   const { page, edits, flush } = await openEditor({ readOnly: true });
   assert.equal(await page.$eval('#readonly-badge', (e) => e.hidden), false, '閲覧モードの表示が出る');

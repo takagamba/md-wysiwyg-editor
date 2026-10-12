@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.0
+
+- Insert links and images by picking a file (toolbar buttons). The path is relative to the document. / ファイルを選んでリンク・画像を挿入するボタンを追加（文書からの相対パス）
+- Show "Markdown を見たまま編集" without the category prefix in the Command Palette / コマンドパレットで「Markdown を見たまま編集」の前に分類名を付けない
+
 ## 0.1.0
 
 Initial release. / 最初のリリース。

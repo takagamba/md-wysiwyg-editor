@@ -23,6 +23,7 @@ npm run notices     # THIRD_PARTY_NOTICES.md を再生成（依存関係・Vdito
 - `src/extension.ts` — コマンド登録、カスタムエディタ登録、既定エディタ設定
 - `src/markdownEditorProvider.ts` — `EditorSession`（1 タブ = 1 セッション）。Webview HTML/CSP 生成、文書との同期、閲覧モード、リンクを開く処理
 - `src/pdfExport.ts` — markdown-it で HTML 化 → 一時ファイル（file://）→ puppeteer-core でローカルの Edge/Chrome を起動して PDF 化
+- `src/fileLink.ts` — ツールバーの「ファイルへのリンク」「画像」ボタンで選んだファイルを、文書からの相対パスの Markdown にする（選択ダイアログはホスト、挿入は Webview の `insert`）
 - `src/findBrowser.ts` — PDF 出力に使う Chrome / Edge を探す（vscode に依存しないので Webview のテストでも使う）
 - `src/markdownItPlugins.ts` — PDF 用の数式（`$`/`$$`）とタスクリストのプラグイン
 - `webview/protocol.ts` — ホスト⇔Webview のメッセージ型（両側から import）

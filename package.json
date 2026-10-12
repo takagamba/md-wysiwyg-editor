@@ -7,7 +7,7 @@
     "color": "#1f1f1f",
     "theme": "dark"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "takagamba",
   "license": "MIT",
   "author": "takagamba",
@@ -83,7 +83,6 @@
       {
         "command": "mdWysiwyg.openWysiwyg",
         "title": "Markdown を見たまま編集",
-        "category": "Markdown WYSIWYG",
         "icon": "$(preview)"
       },
       {

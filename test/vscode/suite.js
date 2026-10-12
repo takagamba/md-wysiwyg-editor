@@ -68,7 +68,7 @@ const tests = {
 exports.run = async () => {
   const file = path.join(process.env.MDW_TEST_WORKSPACE, 'test.md');
   // 拡張機能が有効になる（onStartupFinished）のを待つ
-  const ext = vscode.extensions.all.find((e) => e.id === 'takagamba.md-wysiwyg-editor');
+  const ext = vscode.extensions.all.find((e) => e.id === 'takagamba.markdown-wysiwyg-pdf');
   assert.ok(ext, '拡張機能が読み込まれていない');
   await ext.activate();
 

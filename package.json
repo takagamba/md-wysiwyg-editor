@@ -1,5 +1,5 @@
 {
-  "name": "md-wysiwyg-editor",
+  "name": "markdown-wysiwyg-pdf",
   "displayName": "Markdown WYSIWYG + PDF",
   "description": "Edit Markdown as it looks, in the same tab (Typora-like). Keeps your original formatting, with read-only mode and PDF export. / Markdown を見たまま同じタブで編集。閲覧モードと PDF 出力に対応。",
   "icon": "media/icon.png",

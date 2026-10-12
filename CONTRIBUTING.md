@@ -12,7 +12,7 @@ npm run package      # .vsix を作成
 VS Code でこのフォルダを開き **F5**（「拡張機能を実行」）を押すと、`sample/` フォルダが開いた新しいウィンドウが起動します。
 
 - `sample/sample.md` を開くと「Markdown を見たまま編集」で表示されます
-- `.vsix` は `code --install-extension md-wysiwyg-editor-<version>.vsix` でインストールできます
+- `.vsix` は `code --install-extension markdown-wysiwyg-pdf-<version>.vsix` でインストールできます
 
 ## PDF 出力の仕組み
 

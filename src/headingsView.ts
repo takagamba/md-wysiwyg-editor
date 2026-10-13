@@ -25,12 +25,11 @@ export class HeadingsView implements vscode.TreeDataProvider<Heading>, vscode.Di
       this.changed,
       vscode.window.createTreeView(HEADINGS_VIEW_ID, { treeDataProvider: this, showCollapseAll: true }),
       vscode.commands.registerCommand(REVEAL_COMMAND, (h: Heading) => this.session?.revealHeading(h.index, h.text)),
-      EditorSession.onDidChangeActive((s) => {
-        if (s && s !== this.session) {
-          this.session = s;
-          this.refresh();
-        }
-      }),
+      // 表示する文書は、アクティブなタブから決める（サイドバーにフォーカスが移っても変わらない）
+      EditorSession.onDidChangeActive(() => this.follow()),
+      EditorSession.onDidCreate(() => this.follow()),
+      vscode.window.tabGroups.onDidChangeTabs(() => this.follow()),
+      vscode.window.tabGroups.onDidChangeTabGroups(() => this.follow()),
       EditorSession.onDidDispose((s) => {
         if (s !== this.session) return;
         this.session = undefined;
@@ -43,6 +42,14 @@ export class HeadingsView implements vscode.TreeDataProvider<Heading>, vscode.Di
       }),
     );
     this.session = EditorSession.active;
+    this.refresh();
+  }
+
+  /** アクティブな見たまま編集のタブに表示を合わせる（テキストエディタなどに移ったときは前の表示のまま。ビュー自体が隠れる） */
+  private follow(): void {
+    const session = EditorSession.active;
+    if (!session || session === this.session) return;
+    this.session = session;
     this.refresh();
   }
 

@@ -24,6 +24,8 @@ export class EditorSession implements vscode.Disposable {
   /** アクティブなセッションが変わった（見出しビューの更新に使う） */
   static readonly onDidChangeActive = EditorSession.activeChanged.event;
   static readonly onDidDispose = EditorSession.disposed.event;
+  private static readonly created = new vscode.EventEmitter<EditorSession>();
+  static readonly onDidCreate = EditorSession.created.event;
 
   /** Webview が最後に把握している本文（LF）。エコーバック防止に使う */
   private webviewText: string;
@@ -33,8 +35,22 @@ export class EditorSession implements vscode.Disposable {
   private flushSeq = 0;
   private readonly flushWaiters = new Map<number, (text: string | null) => void>();
 
+  /**
+   * フォーカスのあるセッション。サイドバーなどにフォーカスがあるときや、
+   * 復元されたタブで panel.active が立たないときは、アクティブなタブから探す
+   */
   static get active(): EditorSession | undefined {
-    return EditorSession.activeSession;
+    return EditorSession.activeSession ?? EditorSession.forActiveTab();
+  }
+
+  /** アクティブなタブ（エディタグループ）が見たまま編集なら、そのセッション */
+  static forActiveTab(): EditorSession | undefined {
+    const group = vscode.window.tabGroups.activeTabGroup;
+    const input = group.activeTab?.input;
+    if (!(input instanceof vscode.TabInputCustom) || input.viewType !== VIEW_TYPE) return undefined;
+    const uri = input.uri.toString();
+    const candidates = [...EditorSession.sessions].filter((s) => s.document.uri.toString() === uri);
+    return candidates.find((s) => s.panel.viewColumn === group.viewColumn) ?? candidates[0];
   }
 
   static forUri(uri: vscode.Uri): EditorSession | undefined {
@@ -89,6 +105,7 @@ export class EditorSession implements vscode.Disposable {
     );
 
     EditorSession.sessions.add(this);
+    EditorSession.created.fire(this);
     if (panel.active) this.activate();
   }
 

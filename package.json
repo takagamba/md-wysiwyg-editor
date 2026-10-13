@@ -56,6 +56,31 @@
         "priority": "default"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mdWysiwyg",
+          "title": "Markdown WYSIWYG",
+          "icon": "media/activitybar.svg"
+        }
+      ]
+    },
+    "views": {
+      "mdWysiwyg": [
+        {
+          "id": "mdWysiwyg.headings",
+          "name": "見出し",
+          "icon": "media/activitybar.svg",
+          "when": "activeCustomEditorId == mdWysiwyg.vditor"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "mdWysiwyg.headings",
+        "contents": "この文書には見出しがありません。\n`#` で始まる行が見出しになります。"
+      }
+    ],
     "commands": [
       {
         "command": "mdWysiwyg.enterReadOnly",

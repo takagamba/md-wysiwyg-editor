@@ -248,6 +248,35 @@ test('エクスプローラーからのドロップは、ドロップした位�
   await page.close();
 });
 
+test('見出しへの移動: その見出しまでスクロールし、末尾にカーソルを置く', { skip }, async () => {
+  const { page, send, edits } = await openEditor();
+  await page.setViewport({ width: 800, height: 400 });
+  const { index, text } = await page.evaluate(() => {
+    const hs = [...document.querySelectorAll('.vditor-ir .vditor-reset h1, .vditor-ir .vditor-reset h2')];
+    const i = hs.length - 1;
+    return { index: i, text: hs[i].textContent.replace(/^#+\s*/, '').trim() };
+  });
+  await send({ type: 'revealHeading', index, text });
+  await sleep(300);
+  const state = await page.evaluate((i) => {
+    const h = document.querySelectorAll('.vditor-ir .vditor-reset h1, .vditor-ir .vditor-reset h2')[i];
+    const top = h.getBoundingClientRect().top;
+    return { visible: top >= 0 && top < window.innerHeight, caretInside: h.contains(getSelection().anchorNode) };
+  }, index);
+  assert.deepEqual(state, { visible: true, caretInside: true });
+  // index がずれていても、同じ文字の見出しに移動する
+  await send({ type: 'revealHeading', index: 0, text });
+  await sleep(300);
+  const caretHeading = await page.evaluate(() => {
+    const n = getSelection().anchorNode;
+    return (n.nodeType === Node.ELEMENT_NODE ? n : n.parentElement).closest('h1, h2')?.textContent;
+  });
+  assert.ok(caretHeading?.includes(text));
+  await sleep(SETTLE_MS);
+  assert.deepEqual(await edits(), [], '移動しただけでは文書を変えない');
+  await page.close();
+});
+
 test('閲覧モードでは入力も flush も文書を変えない', { skip }, async () => {
   const { page, edits, flush } = await openEditor({ readOnly: true });
   assert.equal(await page.$eval('#readonly-badge', (e) => e.hidden), false, '閲覧モードの表示が出る');

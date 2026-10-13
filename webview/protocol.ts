@@ -17,7 +17,9 @@ export type HostToWebview =
   /** 保存の直前に、エディタの最新の内容を求める */
   | { type: 'flush'; id: number }
   /** カーソル位置に Markdown を挿入する（ファイル選択の結果） */
-  | { type: 'insert'; text: string };
+  | { type: 'insert'; text: string }
+  /** 見出し（文書の先頭から index 番目。text で照合する）までスクロールしてカーソルを置く */
+  | { type: 'revealHeading'; index: number; text: string };
 
 export type WebviewToHost =
   | { type: 'ready' }

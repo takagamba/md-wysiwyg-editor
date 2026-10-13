@@ -53,6 +53,16 @@ const tests = {
     await waitFor(() => tabKind() === VIEW_TYPE, '見たまま編集に切り替わらない');
   },
 
+  async '見出しビューを開き、見出しへ移動できる'(file) {
+    await openFresh(file);
+    await vscode.commands.executeCommand('mdWysiwyg.headings.focus');
+    await vscode.commands.executeCommand('mdWysiwyg.revealHeading', { index: 1, text: 'リスト' });
+    // 移動後もエディタがアクティブで、文書は変わらない
+    await waitFor(() => tabKind() === VIEW_TYPE, '見たまま編集がアクティブにならない');
+    await sleep(1500);
+    assert.equal(activeTab().isDirty, false);
+  },
+
   async 'openByDefault を切り替えると、開くエディタが変わる'(file) {
     await setOpenByDefault(false);
     await waitFor(() => associations()?.['*.md'] === 'default', 'editorAssociations が default にならない');

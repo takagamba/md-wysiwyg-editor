@@ -24,6 +24,8 @@ npm run notices     # THIRD_PARTY_NOTICES.md を再生成（依存関係・Vdito
 - `src/markdownEditorProvider.ts` — `EditorSession`（1 タブ = 1 セッション）。Webview HTML/CSP 生成、文書との同期、閲覧モード、リンクを開く処理
 - `src/pdfExport.ts` — markdown-it で HTML 化 → 一時ファイル（file://）→ puppeteer-core でローカルの Edge/Chrome を起動して PDF 化
 - `src/fileLink.ts` — ファイルを文書からの相対パスの Markdown にする（ツールバーのファイル選択、エクスプローラーからのドロップ）。貼り付け・ドロップした画像の保存名もここで決める。画像は Webview の `upload.handler` がバイト列（Uint8Array）をホストに送り、ホストが `mdWysiwyg.imageFolder` に保存して `insert` で挿入させる（Vditor は handler がないと base64 で埋め込む）。ドロップ位置は Vditor が使わないので、common.ts でドロップ前にカーソルをそこへ移す
+- `src/headings.ts` — 見出しの解析（markdown-it。コードブロック・front matter を除く）と階層化
+- `src/headingsView.ts` — アクティビティバーの「見出し」ビュー（TreeView。表示条件は package.json の `when`）。クリックで `EditorSession.revealHeading` → Webview の `revealHeading`。見出しは文書の先頭からの順番で Webview の h1〜h6 要素と対応させ、文字が一致しなければ同じ文字の見出しを探す
 - `src/findBrowser.ts` — PDF 出力に使う Chrome / Edge を探す（vscode に依存しないので Webview のテストでも使う）
 - `src/markdownItPlugins.ts` — PDF 用の数式（`$`/`$$`）とタスクリストのプラグイン
 - `webview/protocol.ts` — ホスト⇔Webview のメッセージ型（両側から import）

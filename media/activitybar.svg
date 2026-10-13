@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round">
+  <!-- 見出しの一覧（階層ごとに字下げしたリスト） -->
+  <path d="M3 5h2M8 5h13"/>
+  <path d="M7 12h2M12 12h9"/>
+  <path d="M7 19h2M12 19h9"/>
+</svg>

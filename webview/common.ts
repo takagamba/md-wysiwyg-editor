@@ -16,6 +16,8 @@ export interface EditorAdapter {
   getValue(): string;
   /** カーソル位置に Markdown を挿入する */
   insert(markdown: string): void;
+  /** 編集領域（見出しを探す範囲）。分割表示（sv）のように見出し要素がなければ undefined */
+  contentElement(): HTMLElement | undefined;
   setReadOnly(readOnly: boolean): void;
 }
 
@@ -170,6 +172,9 @@ export function bootstrap(adapter: EditorAdapter): void {
           sendCurrentText();
           applyReadOnly(message.readOnly);
           break;
+        case 'revealHeading':
+          revealHeading(adapter, message.index, message.text);
+          break;
         case 'insert':
           if (readOnly) break;
           adapter.insert(message.text);
@@ -190,6 +195,36 @@ export function bootstrap(adapter: EditorAdapter): void {
 
   installLinkHandler(() => readOnly);
   post({ type: 'ready' });
+}
+
+/** 見出しの表示上の文字（IR モードで表示される ## などの記号を除く） */
+const headingText = (el: Element) => {
+  const clone = el.cloneNode(true) as Element;
+  clone.querySelectorAll('.vditor-ir__marker').forEach((m) => m.remove());
+  return (clone.textContent ?? '').trim();
+};
+
+/**
+ * 見出しまでスクロールし、見出しの末尾にカーソルを置く。
+ * index 番目の見出しの文字が一致しなければ（数え方が拡張側とずれた場合）、同じ文字の見出しを探す
+ */
+function revealHeading(adapter: EditorAdapter, index: number, text: string): void {
+  const content = adapter.contentElement();
+  if (!content) return;
+  const headings = [...content.querySelectorAll('h1, h2, h3, h4, h5, h6')];
+  let target = headings[index];
+  if (!target || headingText(target) !== text) target = headings.find((h) => headingText(h) === text) ?? target;
+  if (!target) return;
+  target.scrollIntoView({ block: 'start' });
+  if (content.isContentEditable) {
+    content.focus({ preventScroll: true });
+    const range = document.createRange();
+    range.selectNodeContents(target);
+    range.collapse(false);
+    const selection = getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }
 }
 
 /**

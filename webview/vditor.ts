@@ -97,6 +97,11 @@ const adapter: EditorAdapter = {
     vditor.insertValue(markdown);
   },
 
+  contentElement() {
+    const mode = vditor.getCurrentMode();
+    return mode === 'sv' ? undefined : (document.querySelector<HTMLElement>(`.vditor-${mode} .vditor-reset`) ?? undefined);
+  },
+
   setReadOnly(readOnly) {
     if (readOnly) vditor.disabled();
     else vditor.enable();

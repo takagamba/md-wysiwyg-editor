@@ -19,6 +19,11 @@ const toLf = (s: string) => s.replace(/\r\n?/g, '\n');
 export class EditorSession implements vscode.Disposable {
   private static readonly sessions = new Set<EditorSession>();
   private static activeSession: EditorSession | undefined;
+  private static readonly activeChanged = new vscode.EventEmitter<EditorSession | undefined>();
+  private static readonly disposed = new vscode.EventEmitter<EditorSession>();
+  /** アクティブなセッションが変わった（見出しビューの更新に使う） */
+  static readonly onDidChangeActive = EditorSession.activeChanged.event;
+  static readonly onDidDispose = EditorSession.disposed.event;
 
   /** Webview が最後に把握している本文（LF）。エコーバック防止に使う */
   private webviewText: string;
@@ -75,7 +80,10 @@ export class EditorSession implements vscode.Disposable {
       }),
       panel.onDidChangeViewState(() => {
         if (panel.active) this.activate();
-        else if (EditorSession.activeSession === this) EditorSession.activeSession = undefined;
+        else if (EditorSession.activeSession === this) {
+          EditorSession.activeSession = undefined;
+          EditorSession.activeChanged.fire(undefined);
+        }
       }),
       panel.onDidDispose(() => this.dispose()),
     );
@@ -99,6 +107,13 @@ export class EditorSession implements vscode.Disposable {
   private activate(): void {
     EditorSession.activeSession = this;
     void vscode.commands.executeCommand('setContext', READONLY_CONTEXT_KEY, this.readOnly);
+    EditorSession.activeChanged.fire(this);
+  }
+
+  /** エディタを前面に出し、見出し（文書の先頭から index 番目）までスクロールしてカーソルを置く */
+  revealHeading(index: number, text: string): void {
+    this.panel.reveal(this.panel.viewColumn, false);
+    this.post({ type: 'revealHeading', index, text });
   }
 
   private post(message: HostToWebview): void {
@@ -308,8 +323,10 @@ export class EditorSession implements vscode.Disposable {
     EditorSession.sessions.delete(this);
     if (EditorSession.activeSession === this) {
       EditorSession.activeSession = undefined;
+      EditorSession.activeChanged.fire(undefined);
       void vscode.commands.executeCommand('setContext', READONLY_CONTEXT_KEY, false);
     }
+    EditorSession.disposed.fire(this);
     this.disposables.forEach((d) => d.dispose());
   }
 }

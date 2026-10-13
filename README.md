@@ -20,6 +20,7 @@ Powered by [Vditor](https://github.com/Vanessa219/vditor) in Typora-like instant
 - **PDF export** — PDF button in the title bar or the Explorer context menu (uses the Edge / Chrome installed on your PC)
 - **Paste or drop images** — pasted screenshots and dropped image files are saved next to the document (`images/` by default) and inserted as relative links, not embedded as base64
 - **Insert links and images by picking a file** — toolbar buttons insert a path relative to the document. You can also drop files from VS Code's Explorer (hold `Shift` while dropping)
+- **Headings panel** — an icon in the Activity Bar shows the document's headings as a tree; click one to jump to it
 - **Find** — `Ctrl+F`
 - Math (KaTeX), diagrams (Mermaid, ECharts, Graphviz, and more), syntax highlighting, tables, task lists
 - Works with VS Code's own save, undo, dirty indicator, Git diff, and side-by-side editing with the text editor
@@ -83,6 +84,7 @@ Opening a file never marks it as modified. Set `mdWysiwyg.preserveFormatting` to
 - **PDF 出力** — タイトルバーの PDF ボタン / エクスプローラーの右クリック（PC の Edge / Chrome を使います）
 - **画像の貼り付け・ドロップ** — 貼り付けたスクリーンショットやドロップした画像ファイルを文書のフォルダ（既定は `images/`）に保存し、相対パスで挿入します（base64 で埋め込みません）
 - **ファイルを選んでリンク・画像を挿入** — ツールバーのボタンから。文書からの相対パスで挿入します。VS Code のエクスプローラーから `Shift` を押しながらドロップしても挿入できます
+- **見出しの一覧** — 左端のアクティビティバーのアイコンから、文書の見出しを階層で表示します。クリックするとその見出しへ移動します
 - **検索** — `Ctrl+F`
 - 数式（KaTeX）、図（Mermaid・ECharts・Graphviz など）、コードのハイライト、表、タスクリスト
 - 保存・元に戻す・未保存マーク・Git の差分・テキストエディタとの同時編集は VS Code の機能がそのまま使えます

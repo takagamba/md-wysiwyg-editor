@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { HeadingsView } from './headingsView';
 import { EditorSession, MarkdownEditorProvider, VIEW_TYPE } from './markdownEditorProvider';
 import { exportPdf } from './pdfExport';
 
@@ -17,6 +18,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     MarkdownEditorProvider.register(context),
+    new HeadingsView(),
 
     vscode.commands.registerCommand('mdWysiwyg.enterReadOnly', () => setReadOnly(true)),
     vscode.commands.registerCommand('mdWysiwyg.exitReadOnly', () => setReadOnly(false)),
